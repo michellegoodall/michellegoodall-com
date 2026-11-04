@@ -37,5 +37,10 @@ For debugging, `scrollTimeline.render(0.5)` in the browser console draws any poi
 - Adobe Fonts only serves this kit to the domains added to its web project, so fonts may fall back when running locally.
 - `scrape_site.py` rewrites `url(#…)` fragment references as file paths. That breaks the cursor-blob filter in `original-site/`. It's already fixed by hand in `site/index.html`.
 
+## Hosting
+The site is hosted on GitHub Pages at https://michellegoodall.github.io/michellegoodall-com/. `.github/workflows/pages.yml` publishes the `site/` folder on every push to `main`, and deploys take a minute or two. Progress is in the repo's **Actions** tab.
+
+Fonts only load on domains added to the Adobe Fonts web project, so add `michellegoodall.github.io` there (and michellegoodall.com at launch).
+
 ## Domain
 The domain is registered at Wix (prepaid for 3 more years). DNS records in Wix will point to the host at launch.
