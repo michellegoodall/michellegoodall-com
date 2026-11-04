@@ -7,3 +7,5 @@ dist/
 # secrets
 .env
 .env.*
+# old Webflow snapshot (made by scrape_site.py), kept locally only
+original-site/
