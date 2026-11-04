@@ -1,0 +1,9 @@
+# macOS
+.DS_Store
+# dependencies / builds
+node_modules/
+dist/
+.vercel/
+# secrets
+.env
+.env.*
