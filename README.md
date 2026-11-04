@@ -4,10 +4,7 @@ Michelle Goodall's portfolio site. It replaces the old Webflow build.
 
 ## Folders
 - `site/`: the website that gets deployed (for now, a working copy of the old page that will become the rebuild)
-- `original-site/`: a snapshot of the old Webflow site, scraped on Nov 4, 2026 (reference only)
-  - `_raw-html/`: the HTML exactly as Webflow served it
-  - `assets/`: images, CSS, JS and fonts from the old site
-- `scrape_site.py`: the script that made the snapshot
+- `scrape_site.py`: makes a snapshot of the old Webflow site in `original-site/` for reference. That folder is git-ignored, so it stays on your machine and isn't in the repo.
 
 ## Running locally
 ```
