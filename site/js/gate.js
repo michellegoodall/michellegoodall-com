@@ -27,9 +27,8 @@
     var gate = document.createElement('form');
     gate.className = 'mg-gate';
     gate.innerHTML =
-      '<label class="mg-gate__label" for="mg-gate-input">Under construction</label>' +
       '<div class="mg-gate__row">' +
-        '<input id="mg-gate-input" class="mg-gate__input" type="password" autocomplete="current-password" placeholder="Password" required autofocus>' +
+        '<input class="mg-gate__input" type="password" aria-label="Password" autocomplete="current-password" placeholder="Password" required autofocus>' +
         '<button class="mg-gate__btn" type="submit">Enter</button>' +
       '</div>' +
       '<p class="mg-gate__err" role="alert" aria-live="polite"></p>';
@@ -46,6 +45,10 @@
         try { localStorage.setItem(KEY, hash); } catch (e2) {}
         root.classList.remove('is-gated');
         gate.remove();
+        // The page was hidden until now, so anything that measured it on load
+        // (the scroll animation) needs to measure again from the top.
+        window.scrollTo(0, 0);
+        window.dispatchEvent(new Event('mg:unlocked'));
       } else {
         err.textContent = 'Wrong password';
         input.value = '';
