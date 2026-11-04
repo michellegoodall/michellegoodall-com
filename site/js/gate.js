@@ -27,16 +27,19 @@
     var gate = document.createElement('form');
     gate.className = 'mg-gate';
     gate.innerHTML =
-      '<div class="mg-gate__row">' +
-        '<input class="mg-gate__input" type="password" aria-label="Password" autocomplete="current-password" placeholder="Password" required autofocus>' +
-        '<button class="mg-gate__btn" type="submit">Enter</button>' +
-      '</div>' +
+      '<img class="mg-gate__logo" src="assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e309ec32ed162d0c0daae7_mglogonewred.svg" alt="Michelle Goodall">' +
+      '<input class="mg-gate__input" type="password" aria-label="Password" autocomplete="current-password" placeholder="Password" required autofocus>' +
       '<p class="mg-gate__err" role="alert" aria-live="polite"></p>';
     document.body.appendChild(gate);
 
     var input = gate.querySelector('input');
     var err = gate.querySelector('.mg-gate__err');
     input.focus();
+
+    // Clicking anywhere on the screen puts the cursor back in the box.
+    gate.addEventListener('mousedown', function (e) {
+      if (e.target !== input) { e.preventDefault(); input.focus(); }
+    });
 
     gate.addEventListener('submit', async function (e) {
       e.preventDefault();
