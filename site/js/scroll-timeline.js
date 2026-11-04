@@ -170,6 +170,12 @@
 
   window.addEventListener('scroll', wake, { passive: true });
   window.addEventListener('resize', wake);
+  // While the password gate is up the section is display:none and measures
+  // as fully scrolled, so jump straight to the real position once it opens.
+  window.addEventListener('mg:unlocked', function () {
+    position = targetProgress();
+    render(position);
+  });
   render(position);
 
   // Exposed for debugging in the console: scrollTimeline.render(0.5)
