@@ -3,7 +3,7 @@
 Michelle Goodall's portfolio site. It replaces the old Webflow build.
 
 ## Folders
-- `site/`: the website that gets deployed (for now, a working copy of the old page that will become the rebuild)
+- `site/`: the website that gets deployed
 - `scrape_site.py`: makes a snapshot of the old Webflow site in `original-site/` for reference. That folder is git-ignored, so it stays on your machine and isn't in the repo.
 
 ## Running locally
@@ -12,25 +12,30 @@ python3 -m http.server 8765 --directory site
 ```
 Then open http://127.0.0.1:8765/. Use a server rather than opening the file directly, so scripts and fonts load the same way they do online.
 
-## Homepage scroll animation
-`site/js/scroll-timeline.js` replaces Webflow's interaction engine (IX2). It reproduces the "Homepage Animation" interaction using the keyframes, easings and smoothing from the published Webflow bundle. jQuery and the Webflow scripts are no longer loaded.
+## Homepage
+`site/index.html` is Homepage v2 from the Figma page "Homepage v2 — Scroll" (frames H01–H10): one continuous scroll in ten sections, styled by `css/home.css` and animated by `js/home.js`.
+
+| Section | Figma | Motion |
+|---|---|---|
+| Hero | H01 | "GOODALL," slides left and "Michelle" right as it scrolls away; the three roles rise in |
+| Manifesto | H02 | Pinned while you scroll; words appear one by one and the script words turn ink → cream |
+| I do the lot | H03 | Red; the six disciplines rise in |
+| The glance | H04 (option A) | Pinned; a 3D ring of 12 cards spins with scroll; the front card is captioned below; cards link to `/work/` |
+| Beloved Projects | H05 | The Pinky Ring photo settles from 1.35× as it scrolls in |
+| Bespoke, Downtown Design, 3daysofdesign ’26 | H06–H08 | Photo strip slides in from the left; card and details rise in |
+| The index & the lab | H09 | Rise in |
+| Contact | H10 | Red; rise in |
 
 How it works:
-- `.section` is `1500vh` tall and everything inside it is `position: fixed`. Scrolling doesn't move content; it moves a 0–100% progress value (it tops out around 93%).
-- Progress = how far the section has scrolled past the top of the viewport ÷ the section's height.
-- The value is smoothed. Each frame closes 12% of the gap (Webflow's "smoothing: 88"), which gives the floaty lag.
-- The `TRACKS` table at the top of the file maps progress to CSS. Each track has an element, a property (`x`, `y`, `scale`, `opacity`, `color`) and keyframes written as `[progress %, value, easing to next key]`. Edit the table to change the choreography.
+- One rAF loop in `js/home.js` writes CSS variables on each section: `--q` (0 → 1 as it scrolls away), `--e` (0 → 1 as it scrolls in) and, for sticky `[data-scene]` sections, `--p` (0 → 1 across the scene). The CSS uses them for motion.
+- Manifesto words light up when `--p` passes each word's `data-at`.
+- Ring cards are listed in angular order in the HTML; `data-name` and `data-meta` feed the caption. Dark cards (`card--empty`) still need images.
+- `[data-reveal]` elements fade up once when they enter the screen.
+- The right-edge rail follows the section in the middle of the screen (`data-rail`). Sections with `data-theme="red"` switch the rail to black.
+- Each section has its "Open page" link in the markup. Only `/work/` exists so far, so the others are `hidden`; remove `hidden` when a route is built.
+- Layout sizes are the Figma px at 1440 × 900, written as `calc(N * var(--u))`, so each section keeps its proportions at any window size. Phones (≤767px) get a stacked layout; there are no v2 mobile frames yet.
 
-Timeline:
-| Progress | What happens |
-|---|---|
-| 0–39% | "GOODALL," slides off left, "Michelle" off right; [SCROLL] and the blurb fade out |
-| 18–48% | "Good design starts…" rises through the screen; its words fade in one by one (24–31%) and the script words turn dark → cream |
-| 34–56% | Red panel drops in, holds, then wipes up and away |
-| 42–55% | Background photo and "Beloved Projects" rise in; the photo shrinks from 2× to 1.25× |
-| 59–90% | Stellar Works card slides in from the right, holds while "Web Design / Web Development / UI/UX" scrolls past, then everything pans out to the left |
-
-For debugging, `scrollTimeline.render(0.5)` in the browser console draws any point of the timeline.
+For debugging, `homeScroll.ring(90)` in the browser console turns the ring to any angle.
 
 ## Work page
 `site/work/` is the work index from the Figma page "Work — Concept" (frames W01, W02 and MW01).
@@ -40,9 +45,8 @@ For debugging, `scrollTimeline.render(0.5)` in the browser console draws any poi
 - `css/shared.css` holds the password gate and blob-cursor styles used by every page. A new page needs that stylesheet and `js/gate.js` at the top of `<head>`, and `js/cursor.js` at the end of `<body>`.
 
 ## Known issues
-- The mobile menu button does nothing, because it relied on Webflow's script. The menu has a single placeholder "work" link.
 - Adobe Fonts only serves this kit to the domains added to its web project, so fonts may fall back when running locally.
-- `scrape_site.py` rewrites `url(#…)` fragment references as file paths. That breaks the cursor-blob filter in `original-site/`. It's already fixed by hand in `site/index.html`.
+- `scrape_site.py` rewrites `url(#…)` fragment references as file paths. That breaks the cursor-blob filter in `original-site/`.
 
 ## Hosting
 The site is hosted on GitHub Pages at https://michellegoodall.github.io/michellegoodall-com/. `.github/workflows/pages.yml` publishes the `site/` folder on every push to `main`, and deploys take a minute or two. Progress is in the repo's **Actions** tab.
