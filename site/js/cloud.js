@@ -2,15 +2,18 @@
  * The glance, option A: "The cloud" (Figma: "Glance — Explorations" G1–G4).
  *
  * Every card is a point in 3D, projected by hand each frame (no library), so
- * the four states can blend into each other:
+ * the states can blend into each other:
  *   G1 at rest    the cloud turns slowly; drag to spin it
- *   G2 flying in  scroll moves the camera into the cloud; near cards blur and
- *                 rush past, the card under the red dot sharpens and is named
+ *   G2 flying in  scroll moves the camera into the cloud; the card under your
+ *                 cursor (the red blob) comes forward and is named in script
  *   G3 sorting    hover / tap a discipline: its pieces fan out, the rest drop
  *                 back into faint dust
- *   G4 handoff    the cloud gathers into one deck, and the top card (the Pinky
- *                 Ring photo) grows to fill the screen, which is where the
- *                 Beloved Projects section picks up
+ *   G4 handoff    the cloud gathers into one deck, then the Pinky Ring photo
+ *                 opens out from the top card and becomes the Beloved Projects
+ *                 screen, which then scrolls on to the featured projects
+ *
+ * Performance: cards are a fixed size and move with transform + opacity only
+ * (no filters, no width/height changes), so everything stays on the GPU.
  * Positions are in the Figma frame's 1440 × 900 space; the stage is scaled to
  * the window with --k.
  */
@@ -24,7 +27,6 @@
   var stage = section.querySelector('.cloud__stage');
   var template = section.querySelector('.cloud__pieces');
   var magnets = Array.prototype.slice.call(section.querySelectorAll('.cloud__magnet'));
-  var reticle = section.querySelector('.cloud__reticle');
   var magnetBox = section.querySelector('.cloud__magnets');
   var sortedBox = section.querySelector('.cloud__sorted');
   var sortedTitle = section.querySelector('.cloud__sorted-title');
@@ -35,18 +37,22 @@
   var belovedBack = section.querySelector('.cloud__beloved');
   var hintRest = section.querySelector('.cloud__hint--rest');
   var hintGather = section.querySelector('.cloud__hint--gather');
+  var cover = section.querySelector('.cloud__cover');
   var handoff = section.querySelector('.cloud__handoff');
+  var openLink = section.querySelector('.cloud__open');
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   var CX = 720, CY = 450;         // centre of the 1440 × 900 frame
+  var CARD_W = 150, CARD_H = 200; // every card's box; size comes from scale
   var FOCAL = 1000;               // perspective focal length
   var REST_DIST = 1100;           // camera distance at rest (G1)
-  var FLY_DIST = 150;             // camera distance at the end of the fly-in (G2)
+  var FLY_DIST = 260;             // camera distance at the end of the fly-in (G2)
   var COPIES = 3;                 // each piece appears this many times in the cloud
 
-  // Scroll phases (fractions of the pinned scene)
-  var REST_END = 0.12, FLY_END = 0.6, GATHER_END = 0.88;
+  // Scroll phases (fractions of the pinned scene). The last stretch holds on
+  // the finished Beloved Projects screen before the page moves on.
+  var REST_END = 0.1, FLY_END = 0.5, GATHER_END = 0.76, OPEN_END = 0.9;
 
   // G4 deck: card centres from the Figma frame, bottom → top.
   var DECK = [[667, 475], [752, 420], [701, 473], [733, 425], [693, 469],
@@ -82,10 +88,9 @@
       img: a.querySelector('img')
     };
   });
+  var TOP = pieces.length - 1;     // the last piece tops the deck and opens into the photo
 
-  var SHAPES = [[120, 160], [160, 120], [140, 140]];   // portrait, landscape, square
   var cards = [];
-
   for (var copy = 0; copy < COPIES; copy++) {
     pieces.forEach(function (piece) {
       var el = document.createElement('a');
@@ -105,18 +110,14 @@
 
       // A point inside an ellipsoid, a little denser towards the middle.
       var u = Math.pow(rand(), 0.6), th = rand() * Math.PI * 2, ph = Math.acos(2 * rand() - 1);
-      var shape = SHAPES[Math.floor(rand() * SHAPES.length)];
-      var size = 0.85 + rand() * 0.35;
-
-      var card = {
+      cards.push({
         el: el, piece: piece, copy: copy,
         x: 340 * u * Math.sin(ph) * Math.cos(th),
         y: 300 * u * Math.cos(ph),
         z: 340 * u * Math.sin(ph) * Math.sin(th),
-        w: shape[0] * size, h: shape[1] * size,
+        size: 0.75 + rand() * 0.45,
         cur: null, drawn: {}
-      };
-      cards.push(card);
+      });
       stage.appendChild(el);
     });
   }
@@ -131,7 +132,8 @@
   var sortKey = null;
   var yaw = 0.4, pitch = 0.12, yawVel = 0, pitchVel = 0;
   var dragging = false, dragMoved = false, lastX = 0, lastY = 0, lastPointer = 'mouse';
-  var k = 1, u = 1, vw = 1, vh = 1, mobile = false;
+  var mouseX = null, mouseY = null;          // in window px; null until the mouse moves
+  var k = 1, vw = 1, vh = 1, mobile = false;
 
   function setSort(key) {
     if (key === sortKey) return;
@@ -172,11 +174,12 @@
   // Drag to orbit (anywhere on the scene except the discipline buttons).
   pin.addEventListener('pointerdown', function (e) {
     lastPointer = e.pointerType;
-    if (e.target.closest('.cloud__magnet') || e.button > 0) return;
+    if (e.target.closest('.cloud__magnet, .cloud__open') || e.button > 0) return;
     dragging = true; dragMoved = false;
     lastX = e.clientX; lastY = e.clientY;
   });
   window.addEventListener('pointermove', function (e) {
+    if (e.pointerType === 'mouse') { mouseX = e.clientX; mouseY = e.clientY; }
     if (!dragging) return;
     var dx = e.clientX - lastX, dy = e.clientY - lastY;
     lastX = e.clientX; lastY = e.clientY;
@@ -185,7 +188,7 @@
     pitchVel = dy * 0.004;
     yaw += yawVel;
     pitch = clamp(pitch + pitchVel, -0.7, 0.7);
-  });
+  }, { passive: true });
   window.addEventListener('pointerup', function (e) {
     if (!dragging) return;
     dragging = false;
@@ -202,8 +205,6 @@
     vw = window.innerWidth; vh = window.innerHeight;
     mobile = vw < 768;
     k = Math.min(vw / 1440, vh / 900);
-    // The design unit --u from css/home.css (one Figma px), needed for the handoff.
-    u = mobile ? 0.62 : Math.max(0.6, k);
     if (mobile) k = Math.min(vh / 900, Math.max(k, 0.48));
     pin.style.setProperty('--k', k.toFixed(4));
   }
@@ -216,26 +217,26 @@
     var y2 = c.y * cp - z1 * sp;
     var z2 = c.y * sp + z1 * cp;
     var depth = camDist - z2;
-    var s = FOCAL / Math.max(depth, 40);   // cards behind the camera stay huge and off-screen
-    return { x: CX + x1 * s, y: CY + y2 * s, w: c.w * s, h: c.h * s, depth: depth };
+    var s = FOCAL / Math.max(depth, 60);   // cards at the camera stay big and off-screen
+    return { x: CX + x1 * s, y: CY + y2 * s, s: s * c.size, depth: depth };
   }
 
-  var focused = null, shownPiece = null, lastTime = 0, running = false, visible = false, pinHidden = false;
+  var focused = null, shownPiece = null, lastTime = 0, running = false, visible = false;
 
   function frame(now) {
     var dt = lastTime ? Math.min((now - lastTime) / 1000, 0.05) : 0.016;
     lastTime = now;
 
     var r = section.getBoundingClientRect();
-    if (!r.height) { requestAnimationFrame(frame); return; }      // behind the password gate
+    if (!r.height) { if (visible) requestAnimationFrame(frame); else running = false; return; }
     var span = r.height - vh;
     var p = span > 0 ? clamp(-r.top / span, 0, 1) : 0;
 
     var fly = smooth((p - REST_END) / (FLY_END - REST_END));
     var gather = smooth((p - FLY_END) / (GATHER_END - FLY_END));
-    var hand = smooth((p - GATHER_END) / (1 - GATHER_END));
+    var open = smooth((p - GATHER_END) / (OPEN_END - GATHER_END));
 
-    if (sortKey && (fly > 0.02 || gather > 0)) setSort(null);    // scrolling away ends a sort
+    if (sortKey && (fly > 0.02 || gather > 0)) setSort(null);    // scrolling on ends a sort
 
     // Slow turn at rest, drag inertia, and a slower drift while flying.
     if (!dragging) {
@@ -249,25 +250,23 @@
 
     var camDist = lerp(REST_DIST, FLY_DIST, fly);
     var cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
-
-    // Project everything, then pick the card under the reticle while flying.
     var proj = cards.map(function (c) { return project(c, camDist, cy, sy, cp, sp); });
 
+    // G2: the card under the cursor (or the centre, on touch) comes forward.
     focused = null;
     if (fly > 0.08 && gather < 0.15) {
-      var best = null, bestScore = Infinity;
+      var fx = CX, fy = CY;
+      if (mouseX !== null && !mobile) { fx = CX + (mouseX - vw / 2) / k; fy = CY + (mouseY - vh / 2) / k; }
+      var best = null, bestDepth = Infinity;
       proj.forEach(function (q, i) {
         if (q.depth < 220) return;
-        var dx = Math.abs(q.x - CX), dy = Math.abs(q.y - CY);
-        var inside = dx < q.w / 2 && dy < q.h / 2;
-        var score = (inside ? 0 : 10000) + q.depth;
-        if (!inside && Math.hypot(dx, dy) > 160) return;
-        if (score < bestScore) { bestScore = score; best = i; }
+        var hw = CARD_W * q.s / 2, hh = CARD_H * q.s / 2;
+        if (Math.abs(q.x - fx) < hw && Math.abs(q.y - fy) < hh && q.depth < bestDepth) { bestDepth = q.depth; best = i; }
       });
       if (best !== null) focused = cards[best];
     }
 
-    // Sorted fan (G3)
+    // G3: sorted fan
     var fanIndex = {}, fanCount = 0;
     if (sortKey) {
       cards.forEach(function (c) {
@@ -276,92 +275,82 @@
     }
     var spread = Math.min(48, 6.9 * Math.max(fanCount - 1, 0));
 
-    var ease = 1 - Math.pow(1 - 0.14, dt * 60);
+    var ease = 1 - Math.pow(1 - 0.16, dt * 60);
 
     cards.forEach(function (c, i) {
       var q = proj[i];
-      var t = { x: q.x, y: q.y, w: q.w, h: q.h, r: 0, o: 1, b: 0, z: Math.round(3000 - q.depth) };
+      var t = { x: q.x, y: q.y, s: q.s, r: 0, o: 1, z: Math.round(3000 - q.depth) };
 
-      // Opacity and blur by depth (G1: far cards ~72% and slightly soft).
+      // G1: far cards a little faded (72–100%, from the frame).
       t.o = clamp(1 - (q.depth - 155) * 0.32 / 875, 0.7, 1);
-      t.b = q.depth > 800 ? 1 : 0;
       if (fly > 0) {
-        // G2: near cards rush past blurred; anything at the camera fades out.
-        // Within ~600px of the camera a card goes soft, up to 7px when it's close
-        // (G2); everything else keeps a faint 0.75px so the focus card stands out.
-        var ramp = clamp(fly * 4, 0, 1);
-        var nearBlur = clamp((600 - q.depth) / 350, 0, 1) * 7;
-        t.b = Math.max(t.b * (1 - ramp), (nearBlur > 0.75 ? nearBlur : 0.75) * ramp);
-        t.o *= clamp((q.depth - 60) / 140, 0, 1) * lerp(1, 0.75, fly);
-        if (c === focused) { t.b = 0; t.o = 1; t.z = 4000; }
+        // G2: anything reaching the camera fades away; the focus card stays bright
+        // while the rest dim a little so it reads clearly.
+        t.o *= clamp((q.depth - 80) / 160, 0, 1);
+        if (c === focused) { t.o = 1; t.z = 4000; t.s *= 1.06; }
+        else t.o *= lerp(1, 0.55, clamp(fly * 3, 0, 1) * (focused ? 1 : 0.4));
       }
 
       // G3: matching pieces fan out, the rest fall back into dust.
       if (sortKey) {
-        if (c.piece.index in fanIndex && c.copy === 0) {
+        if (c.copy === 0 && c.piece.index in fanIndex) {
           var n = fanIndex[c.piece.index];
           var ang = fanCount > 1 ? -spread / 2 + n * spread / (fanCount - 1) : 0;
           var rad = ang * Math.PI / 180;
-          t = { x: 711 + 960 * Math.sin(rad), y: 1433 - 960 * Math.cos(rad), w: 210, h: 280, r: ang, o: 1, b: 0, z: 5000 + n };
+          t = { x: 711 + 960 * Math.sin(rad), y: 1433 - 960 * Math.cos(rad), s: 1.4, r: ang, o: 1, z: 5000 + n };
         } else {
           t.x = CX + (t.x - CX) * 0.35; t.y = CY + (t.y - CY) * 0.35;
-          t.w *= 0.4; t.h *= 0.4; t.o = 0.12; t.b = 1; t.z = Math.min(t.z, 2000);
+          t.s *= 0.4; t.o = 0.12; t.z = Math.min(t.z, 2000);
         }
       }
 
-      // G4: gather into one deck, then the top card becomes the photo.
+      // G4: gather into one deck.
       if (gather > 0) {
         var slot = c.piece.index, deck;
         if (c.copy === 0) {
-          var size = slot;
-          deck = { x: DECK[slot][0], y: DECK[slot][1], w: 300 + 14 * size, h: 380 + 16 * size,
-                   r: (11 - 1.1 * slot) * (slot % 2 ? -1 : 1), o: 0.4 + 0.06 * slot, b: 0, z: 6000 + slot };
+          deck = { x: DECK[slot][0], y: DECK[slot][1], s: (300 + 14 * slot) / CARD_W,
+                   r: (11 - 1.1 * slot) * (slot % 2 ? -1 : 1), o: 0.4 + 0.06 * slot, z: 6000 + slot };
         } else {
-          deck = { x: CX - 9, y: CY, w: 300, h: 380, r: 0, o: 0, b: 0, z: 5000 };
+          deck = { x: CX - 9, y: CY, s: 2, r: 0, o: 0, z: 5000 };
         }
-        t = { x: lerp(t.x, deck.x, gather), y: lerp(t.y, deck.y, gather), w: lerp(t.w, deck.w, gather),
-              h: lerp(t.h, deck.h, gather), r: lerp(t.r, deck.r, gather), o: lerp(t.o, deck.o, gather),
-              b: lerp(t.b, 0, gather), z: gather > 0.5 ? deck.z : t.z };
-
-        if (hand > 0) {
-          if (c.copy === 0 && slot === pieces.length - 1) {
-            // Grow to exactly the box of the next section's photo (it overhangs
-            // the window by 180u each side and 112u top and bottom, see
-            // .beloved__photo), so the crop matches when the pin lets go.
-            var cw = (vw + 360 * u) / k, ch = (vh + 224 * u) / k;
-            t.x = lerp(t.x, CX, hand); t.y = lerp(t.y, CY, hand);
-            t.w = lerp(t.w, cw, hand); t.h = lerp(t.h, ch, hand);
-            t.r = lerp(t.r, 0, hand); t.o = lerp(t.o, 1, hand);
-          } else {
-            t.o *= 1 - hand;
-          }
-        }
+        t = { x: lerp(t.x, deck.x, gather), y: lerp(t.y, deck.y, gather), s: lerp(t.s, deck.s, gather),
+              r: lerp(t.r, deck.r, gather), o: lerp(t.o, deck.o, gather), z: gather > 0.5 ? deck.z : t.z };
+        // The deck fades out under the opening photo.
+        if (open > 0) t.o *= 1 - clamp(open * 2.5, 0, 1);
       }
 
-      // Ease toward the target (sorting and the fly-in feel weighted, not instant).
-      // (The handoff tracks scroll exactly so the swap at the end lines up.)
-      if (!c.cur || reduceMotion || hand > 0) c.cur = t;
+      if (!c.cur || reduceMotion) c.cur = t;
       else {
-        var a = ease;
-        c.cur = { x: lerp(c.cur.x, t.x, a), y: lerp(c.cur.y, t.y, a), w: lerp(c.cur.w, t.w, a),
-                  h: lerp(c.cur.h, t.h, a), r: lerp(c.cur.r, t.r, a), o: lerp(c.cur.o, t.o, a),
-                  b: lerp(c.cur.b, t.b, a), z: t.z };
+        c.cur = { x: lerp(c.cur.x, t.x, ease), y: lerp(c.cur.y, t.y, ease), s: lerp(c.cur.s, t.s, ease),
+                  r: lerp(c.cur.r, t.r, ease), o: lerp(c.cur.o, t.o, ease), z: t.z };
       }
       draw(c);
     });
+
+    // The Beloved Projects photo opens out of the deck's top card.
+    if (open > 0) {
+      var w = (300 + 14 * TOP) * k, h = (380 + 16 * TOP) * k;
+      var cx = vw / 2 + (DECK[TOP][0] - CX) * k, cyy = vh / 2 + (DECK[TOP][1] - CY) * k;
+      var top = (cyy - h / 2) * (1 - open), left = (cx - w / 2) * (1 - open);
+      var right = (vw - cx - w / 2) * (1 - open), bottom = (vh - cyy - h / 2) * (1 - open);
+      cover.style.clipPath = 'inset(' + top.toFixed(1) + 'px ' + right.toFixed(1) + 'px ' +
+        bottom.toFixed(1) + 'px ' + left.toFixed(1) + 'px)';
+      cover.style.opacity = clamp(open * 4, 0, 1).toFixed(3);
+    } else {
+      cover.style.opacity = '0';
+    }
+    var headline = smooth((open - 0.55) / 0.45);
+    handoff.style.opacity = headline.toFixed(3);
+    openLink.style.opacity = headline.toFixed(3);
+    openLink.style.visibility = headline > 0.5 ? 'visible' : 'hidden';
 
     // Text layers
     var restVis = (1 - clamp(fly * 6, 0, 1)) * (1 - gather);
     magnetBox.style.opacity = restVis.toFixed(3);
     magnetBox.style.visibility = restVis < 0.02 ? 'hidden' : '';
     hintRest.style.opacity = (sortKey ? 0 : restVis).toFixed(3);
-    hintGather.style.opacity = (gather * (1 - hand)).toFixed(3);
-    reticle.style.opacity = (clamp(fly * 5, 0, 1) * (1 - clamp(gather * 3, 0, 1))).toFixed(3);
-    belovedBack.style.opacity = (gather * (1 - hand)).toFixed(3);
-    handoff.style.opacity = hand.toFixed(3);
-    // At the very end the next section sits underneath, identical: let go.
-    var done = p >= 0.9999;
-    if (done !== pinHidden) { pinHidden = done; pin.style.visibility = done ? 'hidden' : ''; }
+    hintGather.style.opacity = (gather * (1 - open)).toFixed(3);
+    belovedBack.style.opacity = (gather * (1 - clamp(open * 3, 0, 1))).toFixed(3);
     sortedBox.style.opacity = sortKey ? '1' : '0';
 
     focusBox.classList.toggle('is-on', !!focused);
@@ -371,22 +360,21 @@
       focusName.textContent = shownPiece.name;
     }
 
+    // Once the photo has opened, this screen is "04 Projects" on the rail.
+    var railKey = open > 0.5 ? 'projects' : 'glance';
+    if (section.dataset.rail !== railKey) section.dataset.rail = railKey;
+
     if (visible) requestAnimationFrame(frame);
     else running = false;
   }
 
   function draw(c) {
     var s = c.cur, d = c.drawn, el = c.el;
-    var w = Math.round(s.w * 2) / 2, h = Math.round(s.h * 2) / 2;
-    if (w !== d.w) { el.style.width = w + 'px'; d.w = w; }
-    if (h !== d.h) { el.style.height = h + 'px'; d.h = h; }
-    el.style.transform = 'translate3d(' + (s.x - w / 2).toFixed(1) + 'px,' + (s.y - h / 2).toFixed(1) +
-      'px,0) rotate(' + s.r.toFixed(2) + 'deg)';
+    el.style.transform = 'translate3d(' + (s.x - CARD_W / 2).toFixed(1) + 'px,' + (s.y - CARD_H / 2).toFixed(1) +
+      'px,0) rotate(' + s.r.toFixed(2) + 'deg) scale(' + s.s.toFixed(4) + ')';
     var o = Math.round(s.o * 100) / 100;
-    // ('' rather than 'visible', so hiding the pin at the handoff hides cards too)
+    // ('' rather than 'visible', so a hidden parent still hides the cards)
     if (o !== d.o) { el.style.opacity = o; d.o = o; el.style.visibility = o < 0.01 ? 'hidden' : ''; }
-    var b = Math.round(s.b * 4) / 4;
-    if (b !== d.b) { el.style.filter = b > 0 ? 'blur(' + b + 'px)' : 'none'; d.b = b; }
     if (s.z !== d.z) { el.style.zIndex = s.z; d.z = s.z; }
   }
 

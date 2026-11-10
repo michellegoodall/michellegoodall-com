@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<link href="css/shared.css" rel="stylesheet" type="text/css"/>
-<script src="js/gate.js"></script>
+<link href="css/shared.css?v=3" rel="stylesheet" type="text/css"/>
+<script src="js/gate.js?v=3"></script>
 <title>Michelle Goodall</title>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta name="description" content="Michelle Goodall: creative director, designer and developer. Exhibitions, showrooms, events, identity, print and websites."/>
 <link href="assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67ed9099bbb11cd3185e475f_mglogofavicon.png" rel="shortcut icon" type="image/x-icon"/>
 <link href="assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67ed90d1be063791513706a1_mglogowebclip.png" rel="apple-touch-icon"/>
 <link rel="stylesheet" href="https://use.typekit.net/vpq1jxz.css">
-<link href="css/home.css" rel="stylesheet" type="text/css"/>
+<link href="css/home.css?v=3" rel="stylesheet" type="text/css"/>
 </head>
 <!--
   Homepage v2 (Figma: "Homepage v2 — Scroll", frames H01–H10).
@@ -41,26 +41,9 @@
 
 <main>
 
-  <!-- H01 Hero — scroll 0% — / -->
+  <!-- H01 Hero — scroll 0% — /. Just the name, as on v1. -->
   <section class="sec hero" id="intro" data-rail="intro">
     <h1 class="hero__name">GOODALL,<span class="hero__sig">Michelle</span></h1>
-    <ol class="hero__roles">
-      <li class="hero__role" data-reveal>
-        <p class="meta meta--red">01</p>
-        <h2 class="hero__role-title">Creative Director</h2>
-        <p class="hero__role-detail">exhibitions · showrooms · events</p>
-      </li>
-      <li class="hero__role" data-reveal>
-        <p class="meta meta--red">02</p>
-        <h2 class="hero__role-title">Designer</h2>
-        <p class="hero__role-detail">identity · print · spaces</p>
-      </li>
-      <li class="hero__role" data-reveal>
-        <p class="meta meta--red">03</p>
-        <h2 class="hero__role-title">Developer</h2>
-        <p class="hero__role-detail">websites · UI / UX · motion</p>
-      </li>
-    </ol>
     <p class="hero__blurb">CREATIVE THINKER AT HEART,<br/>CREATIVE DEVELOPER IN PRACTICE</p>
     <a class="hero__scroll" href="#about">[&nbsp;&nbsp;S C R O L L&nbsp;&nbsp;]</a>
     <a class="open-link" href="about/" hidden>[&nbsp;&nbsp;Open page&nbsp;&nbsp;/about&nbsp;&nbsp;→&nbsp;&nbsp;]</a>
@@ -98,17 +81,15 @@
     H04 The glance — option A, "The cloud" (Figma: "Glance — Explorations" G1–G4).
     Sticky scene; js/cloud.js builds the cards from the <template> list below.
       G1 at rest   all the work floats as one slowly turning 3D cloud; drag to spin
-      G2 flying in scrolling moves the camera into the cloud; the card under the
-                   red dot sharpens and names itself in script
+      G2 flying in scrolling moves the camera into the cloud; the card under your
+                   cursor (the red blob) comes forward and names itself in script
       G3 sorting   hover (or tap) a discipline: its pieces fan out, the rest fall to dust
-      G4 handoff   the cloud gathers into one deck; the top card grows into the
-                   Beloved Projects photo, which leads into the next section
+      G4 handoff   the cloud gathers into one deck; the top card opens out into the
+                   Beloved Projects photo and heading (this replaces H05)
   -->
   <section class="sec scene cloud" id="glance" data-rail="glance" data-scene>
     <div class="scene__pin">
       <div class="cloud__stage"></div>
-
-      <div class="cloud__reticle" aria-hidden="true"></div>
 
       <div class="cloud__magnets" role="group" aria-label="Sort the work by discipline">
         <button class="cloud__magnet" type="button" data-d="cd" data-pos="tl1">Creative Direction<span class="cloud__count"></span></button>
@@ -134,11 +115,20 @@
       <p class="meta cloud__hint cloud__hint--rest">[&nbsp;&nbsp;drag to orbit&nbsp;&nbsp;·&nbsp;&nbsp;scroll to fly in&nbsp;&nbsp;·&nbsp;&nbsp;pick a discipline to sort&nbsp;&nbsp;]</p>
       <p class="meta cloud__hint cloud__hint--gather">[&nbsp;&nbsp;the cloud gathers into one card, which becomes the Beloved Projects photo&nbsp;&nbsp;]</p>
 
-      <!-- Handoff: sits exactly where the next section's heading is, so the swap is invisible. -->
-      <div class="cloud__handoff" aria-hidden="true">
+      <!--
+        G4 handoff → Beloved Projects (H05). The cloud's last screen IS the
+        Beloved Projects section: the photo opens out from the top card of
+        the deck, the heading fades in, and then the page scrolls on to the
+        featured projects.
+      -->
+      <img class="cloud__cover" alt="Pinky Ring, Bellagio" src="assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e5be5fd3526c1fcf35d7bd_Pinky Ring Bellagio Hotel Project Image 05-p-2000.webp"
+           srcset="assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e5be5fd3526c1fcf35d7bd_Pinky Ring Bellagio Hotel Project Image 05-p-1080.webp 1080w, assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e5be5fd3526c1fcf35d7bd_Pinky Ring Bellagio Hotel Project Image 05-p-1600.webp 1600w, assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e5be5fd3526c1fcf35d7bd_Pinky Ring Bellagio Hotel Project Image 05-p-2000.webp 2000w, assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e5be5fd3526c1fcf35d7bd_Pinky Ring Bellagio Hotel Project Image 05-p-2600.webp 2600w" sizes="100vw" loading="lazy"/>
+      <div class="cloud__handoff">
         <p class="meta meta--cream">04 — Three of seven, in full</p>
-        <p class="cloud__handoff-title">Beloved<br/>Projects</p>
+        <h2 class="cloud__handoff-title">Beloved<br/>Projects</h2>
       </div>
+      <a class="open-link cloud__open" href="work/">[&nbsp;&nbsp;Open page&nbsp;&nbsp;/work&nbsp;&nbsp;→&nbsp;&nbsp;]</a>
+    </div>
     </div>
 
     <!--
@@ -148,6 +138,8 @@
       data-d: cd Creative Direction, es Exhibitions & Spaces, ev Events,
       pr Print & Collateral, ux UI / UX, wd Web Development.
     -->
+    <span class="cloud__anchor" id="projects"></span>
+
     <template class="cloud__pieces">
       <a href="work/" data-name="3daysofdesign ’26" data-meta="Exhibition  —  Copenhagen 2026" data-d="cd es ev pr"><img src="assets/work/3daysofdesign-26-2.jpg" alt="3daysofdesign ’26"/></a>
       <a href="work/" data-name="3daysofdesign ’26" data-meta="Exhibition  —  Copenhagen 2026" data-d="cd es ev pr"><img src="assets/work/3daysofdesign-26-3.jpg" alt="3daysofdesign ’26"/></a>
@@ -160,17 +152,6 @@
       <a href="work/" data-name="Bespoke" data-meta="Website  —  Year TBC" data-d="cd ux wd"><img src="assets/work/bespoke.jpg" alt="Bespoke"/></a>
       <a href="#projects" data-name="Beloved Projects" data-meta="Pinky Ring  —  Bellagio" data-d=""><img src="assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e5be5fd3526c1fcf35d7bd_Pinky Ring Bellagio Hotel Project Image 05-p-1600.webp" alt="Pinky Ring, Bellagio"/></a>
     </template>
-  </section>
-
-  <!-- H05 Beloved Projects — scroll 40% — /work -->
-  <section class="sec beloved" id="projects" data-rail="projects">
-    <img class="beloved__photo" alt=""
-         src="assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e5be5fd3526c1fcf35d7bd_Pinky Ring Bellagio Hotel Project Image 05-p-2000.webp"
-         srcset="assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e5be5fd3526c1fcf35d7bd_Pinky Ring Bellagio Hotel Project Image 05-p-1080.webp 1080w, assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e5be5fd3526c1fcf35d7bd_Pinky Ring Bellagio Hotel Project Image 05-p-1600.webp 1600w, assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e5be5fd3526c1fcf35d7bd_Pinky Ring Bellagio Hotel Project Image 05-p-2000.webp 2000w, assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e5be5fd3526c1fcf35d7bd_Pinky Ring Bellagio Hotel Project Image 05-p-2600.webp 2600w"
-         sizes="125vw" loading="lazy"/>
-    <p class="meta meta--cream beloved__count" data-reveal>04 — Three of seven, in full</p>
-    <h2 class="beloved__title" data-reveal>Beloved<br/>Projects</h2>
-    <a class="open-link" href="work/">[&nbsp;&nbsp;Open page&nbsp;&nbsp;/work&nbsp;&nbsp;→&nbsp;&nbsp;]</a>
   </section>
 
   <!-- H06 Project: Bespoke — scroll 50% — /work/bespoke -->
@@ -267,8 +248,8 @@
 
 </main>
 
-<script src="js/home.js"></script>
-<script src="js/cloud.js"></script>
-<script src="js/cursor.js"></script>
+<script src="js/home.js?v=3"></script>
+<script src="js/cloud.js?v=3"></script>
+<script src="js/cursor.js?v=3"></script>
 </body>
 </html>
