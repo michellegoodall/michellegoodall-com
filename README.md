@@ -32,6 +32,13 @@ Timeline:
 
 For debugging, `scrollTimeline.render(0.5)` in the browser console draws any point of the timeline.
 
+## Work page
+`site/work/` is the work index from the Figma page "Work — Concept" (frames W01, W02 and MW01).
+- Each row lists the disciplines it's filed under in `data-disciplines` (`cd` Creative Direction, `es` Exhibition & Spatial, `ev` Events, `pr` Print & Collateral, `ux` UI / UX, `wd` Web Development). Tags marked with `data-d` turn red when that filter is on. Update the filter counts in the buttons if you add or move a project.
+- `data-preview` on a row is the image that follows the cursor on hover. Rows without one show no preview. On phones the same image shows as a small thumbnail.
+- Figma uses stand-in fonts. Per the Foundations page they map to Ivyora Display (titles), Ivyora Text light italic (tags and filter), Altesse (script) and Soleil (meta).
+- `css/shared.css` holds the password gate and blob-cursor styles used by every page. A new page needs that stylesheet and `js/gate.js` at the top of `<head>`, and `js/cursor.js` at the end of `<body>`.
+
 ## Known issues
 - The mobile menu button does nothing, because it relied on Webflow's script. The menu has a single placeholder "work" link.
 - Adobe Fonts only serves this kit to the domains added to its web project, so fonts may fall back when running locally.
