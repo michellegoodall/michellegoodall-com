@@ -4,17 +4,16 @@
  * One rAF loop reads each section's position and writes CSS variables:
  *   --q  0 → 1 as a section scrolls up and out of view (hero exit)
  *   --e  0 → 1 as a section scrolls into view from below (photo motion)
- *   --p  0 → 1 across a sticky [data-scene] (manifesto, ring)
+ *   --p  0 → 1 across a sticky [data-scene] (manifesto, the glance cloud)
  * CSS turns those into motion (see css/home.css). This file also:
  *   - lights up manifesto words as --p passes each word's data-at
- *   - spins the H04 ring with scroll and captions the front card
  *   - reveals [data-reveal] elements on enter
  *   - drives the right-edge scroll rail
+ * The glance cloud has its own script (js/cloud.js) and reads --p from here.
  */
 (function () {
   'use strict';
 
-  var root = document.documentElement;
   var sections = Array.prototype.slice.call(document.querySelectorAll('main > .sec'));
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -23,62 +22,6 @@
   // ---- Manifesto words -------------------------------------------------------
   var manifesto = document.querySelector('.manifesto');
   var words = manifesto ? Array.prototype.slice.call(manifesto.querySelectorAll('.w')) : [];
-
-  // ---- Ring ------------------------------------------------------------------
-  var glance = document.querySelector('.glance');
-  var stage = glance && glance.querySelector('.glance__stage');
-  var cards = glance ? Array.prototype.slice.call(glance.querySelectorAll('.card')) : [];
-  var metaEl = glance && glance.querySelector('.glance__meta');
-  var nameEl = glance && glance.querySelector('.glance__name');
-
-  var RADIUS = 460;                    // px, in the 1440 × 900 stage
-  var STEP = 360 / (cards.length || 1);
-  // At the top of the section the ring sits half a step round, so the first
-  // two cards straddle the front (as in the H04 frame). Scrolling the whole
-  // section turns it most of a full circle, so every card passes the front.
-  // (2° short of half, so the first card is unambiguously the one captioned.)
-  var START = STEP / 2 - 2;
-  var TURN = 360 - STEP;
-  var ringAngle = START, ringTarget = START, activeIndex = -1;
-
-  function placeCards() {
-    cards.forEach(function (card, i) {
-      var a = i * STEP - ringAngle;               // angle from the front, degrees
-      var rad = a * Math.PI / 180;
-      card.style.transform = 'rotateY(' + a.toFixed(2) + 'deg) translateZ(' + RADIUS + 'px)';
-      // Front cards are solid, side cards half, back cards faint (H04 opacities).
-      card.style.opacity = clamp(0.323 + 0.68 * Math.cos(rad), 0.14, 1).toFixed(3);
-      card.style.zIndex = Math.round(100 + 100 * Math.cos(rad));
-      card.tabIndex = Math.cos(rad) > 0.5 ? 0 : -1;
-    });
-
-    // Caption the card nearest the front.
-    var best = 0, bestCos = -2;
-    cards.forEach(function (card, i) {
-      var c = Math.cos((i * STEP - ringAngle) * Math.PI / 180);
-      if (c > bestCos + 1e-6) { bestCos = c; best = i; }
-    });
-    if (best !== activeIndex) {
-      activeIndex = best;
-      var card = cards[best];
-      metaEl.textContent = card.dataset.meta;
-      nameEl.classList.add('is-swapping');
-      setTimeout(function () {
-        nameEl.textContent = card.dataset.name;
-        nameEl.classList.remove('is-swapping');
-      }, reduceMotion ? 0 : 180);
-    }
-  }
-
-  // Scale the 1440 × 900 stage to the window. Phones get a larger scale than
-  // pure fit-to-width so the cards stay readable; the sides crop.
-  function fitStage() {
-    if (!stage) return;
-    var w = window.innerWidth, h = window.innerHeight;
-    var k = Math.min(w / 1440, h / 900);
-    if (w < 768) k = Math.min(h / 900, Math.max(k, 0.52));
-    stage.style.setProperty('--k', k.toFixed(4));
-  }
 
   // ---- Scroll rail -----------------------------------------------------------
   var railLinks = Array.prototype.slice.call(document.querySelectorAll('.rail__link'));
@@ -121,7 +64,6 @@
         if (sec === manifesto) {
           words.forEach(function (w) { w.classList.toggle('is-on', p >= parseFloat(w.dataset.at)); });
         }
-        if (sec === glance) ringTarget = START + p * TURN;
       }
 
       // The rail follows whichever section covers the middle of the screen.
@@ -129,21 +71,6 @@
     });
 
     setRail(railSection);
-    spin();
-  }
-
-  // The ring eases toward its scroll position for a weighty feel.
-  var spinning = false;
-  function spin() {
-    if (spinning) return;
-    spinning = true;
-    requestAnimationFrame(function step() {
-      var gap = ringTarget - ringAngle;
-      ringAngle = Math.abs(gap) < 0.01 || reduceMotion ? ringTarget : ringAngle + gap * 0.12;
-      placeCards();
-      if (ringAngle !== ringTarget) requestAnimationFrame(step);
-      else spinning = false;
-    });
   }
 
   function requestUpdate() {
@@ -151,9 +78,9 @@
   }
 
   window.addEventListener('scroll', requestUpdate, { passive: true });
-  window.addEventListener('resize', function () { fitStage(); requestUpdate(); });
+  window.addEventListener('resize', requestUpdate);
   // The password gate hides the page until it's unlocked; measure again then.
-  window.addEventListener('mg:unlocked', function () { fitStage(); update(); });
+  window.addEventListener('mg:unlocked', update);
 
   // ---- Reveal on enter -------------------------------------------------------
   var revealables = document.querySelectorAll('[data-reveal]');
@@ -168,13 +95,8 @@
     Array.prototype.forEach.call(revealables, function (el) { el.classList.add('is-in'); });
   }
 
-  fitStage();
-  placeCards();
   update();
 
-  // Exposed for debugging in the console, e.g. homeScroll.ring(90)
-  window.homeScroll = {
-    update: update,
-    ring: function (deg) { ringTarget = ringAngle = deg; placeCards(); }
-  };
+  // Exposed for debugging in the console.
+  window.homeScroll = { update: update };
 })();

@@ -94,32 +94,72 @@
     <a class="open-link" href="about/#services" hidden>[&nbsp;&nbsp;Open page&nbsp;&nbsp;/about#services&nbsp;&nbsp;→&nbsp;&nbsp;]</a>
   </section>
 
-  <!-- H04 The glance — scroll 30% — /work. A 3D ring that spins with scroll. -->
-  <section class="sec scene glance" id="glance" data-rail="glance" data-scene>
+  <!--
+    H04 The glance — option A, "The cloud" (Figma: "Glance — Explorations" G1–G4).
+    Sticky scene; js/cloud.js builds the cards from the <template> list below.
+      G1 at rest   all the work floats as one slowly turning 3D cloud; drag to spin
+      G2 flying in scrolling moves the camera into the cloud; the card under the
+                   red dot sharpens and names itself in script
+      G3 sorting   hover (or tap) a discipline: its pieces fan out, the rest fall to dust
+      G4 handoff   the cloud gathers into one deck; the top card grows into the
+                   Beloved Projects photo, which leads into the next section
+  -->
+  <section class="sec scene cloud" id="glance" data-rail="glance" data-scene>
     <div class="scene__pin">
-      <div class="glance__stage">
-        <p class="meta glance__label">03 — A glance at everything</p>
-        <div class="ring" aria-label="All projects">
-          <!-- Angular order around the ring. data-meta / data-name feed the caption. -->
-          <a class="card" href="work/" data-name="Downtown Design" data-meta="03 / 07  —  Exhibition  —  Dubai 2025"><img src="assets/work/downtown-design.jpg" alt="Downtown Design" loading="lazy"/></a>
-          <a class="card" href="work/" data-name="3daysofdesign ’26" data-meta="02 / 07  —  Exhibition  —  Copenhagen 2026"><img src="assets/work/3daysofdesign-26.jpg" alt="3daysofdesign ’26" loading="lazy"/></a>
-          <a class="card card--empty" href="work/" data-name="London Showroom" data-meta="01 / 07  —  Showroom  —  London 2026"><span class="meta">London Showroom</span></a>
-          <a class="card" href="#projects" data-name="Beloved Projects" data-meta="Pinky Ring  —  Bellagio"><img src="assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e5be5fd3526c1fcf35d7bd_Pinky Ring Bellagio Hotel Project Image 05-p-800.webp" alt="Pinky Ring, Bellagio" loading="lazy"/></a>
-          <a class="card" href="work/" data-name="Bespoke" data-meta="05 / 07  —  Website  —  Year TBC"><img src="assets/work/bespoke.jpg" alt="Bespoke" loading="lazy"/></a>
-          <a class="card card--empty" href="work/" data-name="Global Site" data-meta="06 / 07  —  Website  —  Year TBC"><span class="meta">Global Site</span></a>
-          <a class="card" href="work/" data-name="Downtown Design" data-meta="03 / 07  —  Exhibition  —  Dubai 2025"><img src="assets/work/downtown-design-detail.jpg" alt="Downtown Design, detail" loading="lazy"/></a>
-          <a class="card" href="work/" data-name="3daysofdesign ’26" data-meta="02 / 07  —  Exhibition  —  Copenhagen 2026"><img src="assets/work/3daysofdesign-26-mood.jpg" alt="3daysofdesign ’26, detail" loading="lazy"/></a>
-          <a class="card card--empty" href="work/" data-name="Impulse" data-meta="07 / 07  —  Website  —  Year TBC"><span class="meta">Impulse</span></a>
-          <a class="card card--empty" href="work/" data-name="3daysofdesign ’25" data-meta="04 / 07  —  Events  —  Copenhagen 2025"><span class="meta">3daysofdesign ’25</span></a>
-          <a class="card card--empty" href="work/" data-name="Invitation" data-meta="The lab  —  Print"><span class="meta">Invitation</span></a>
-          <a class="card card--empty" href="work/" data-name="Tote" data-meta="The lab  —  Print"><span class="meta">Tote</span></a>
-        </div>
-        <p class="meta glance__meta" aria-live="polite">03 / 07  —  Exhibition  —  Dubai 2025</p>
-        <p class="glance__name">Downtown Design</p>
-        <p class="meta glance__hint">[&nbsp;&nbsp;scroll to spin&nbsp;&nbsp;·&nbsp;&nbsp;click a card to open&nbsp;&nbsp;]</p>
+      <div class="cloud__stage"></div>
+
+      <div class="cloud__reticle" aria-hidden="true"></div>
+
+      <div class="cloud__magnets" role="group" aria-label="Sort the work by discipline">
+        <button class="cloud__magnet" type="button" data-d="cd" data-pos="tl1">Creative Direction<span class="cloud__count"></span></button>
+        <button class="cloud__magnet" type="button" data-d="es" data-pos="tr1">Exhibitions &amp; Spaces<span class="cloud__count"></span></button>
+        <button class="cloud__magnet" type="button" data-d="ev" data-pos="tl2">Events<span class="cloud__count"></span></button>
+        <button class="cloud__magnet" type="button" data-d="pr" data-pos="tr2">Print &amp; Collateral<span class="cloud__count"></span></button>
+        <button class="cloud__magnet" type="button" data-d="ux" data-pos="tl3">UI / UX<span class="cloud__count"></span></button>
+        <button class="cloud__magnet" type="button" data-d="wd" data-pos="tr3">Web Development<span class="cloud__count"></span></button>
       </div>
-      <a class="open-link" href="work/">[&nbsp;&nbsp;Open page&nbsp;&nbsp;/work&nbsp;&nbsp;→&nbsp;&nbsp;]</a>
+
+      <div class="cloud__sorted" aria-live="polite">
+        <p class="cloud__sorted-title"></p>
+        <p class="meta cloud__sorted-count"></p>
+      </div>
+
+      <div class="cloud__focus" aria-live="polite">
+        <p class="meta meta--cream cloud__focus-meta"></p>
+        <p class="cloud__focus-name"></p>
+      </div>
+
+      <p class="cloud__beloved" aria-hidden="true">Beloved<br/>Projects</p>
+
+      <p class="meta cloud__hint cloud__hint--rest">[&nbsp;&nbsp;drag to orbit&nbsp;&nbsp;·&nbsp;&nbsp;scroll to fly in&nbsp;&nbsp;·&nbsp;&nbsp;pick a discipline to sort&nbsp;&nbsp;]</p>
+      <p class="meta cloud__hint cloud__hint--gather">[&nbsp;&nbsp;the cloud gathers into one card, which becomes the Beloved Projects photo&nbsp;&nbsp;]</p>
+
+      <!-- Handoff: sits exactly where the next section's heading is, so the swap is invisible. -->
+      <div class="cloud__handoff" aria-hidden="true">
+        <p class="meta meta--cream">04 — Three of seven, in full</p>
+        <p class="cloud__handoff-title">Beloved<br/>Projects</p>
+      </div>
     </div>
+
+    <!--
+      The pieces in the cloud. Each becomes several cards; the first copy of each
+      is the one that fans out when sorted and joins the final deck (listed
+      bottom → top; the last one becomes the Beloved Projects photo).
+      data-d: cd Creative Direction, es Exhibitions & Spaces, ev Events,
+      pr Print & Collateral, ux UI / UX, wd Web Development.
+    -->
+    <template class="cloud__pieces">
+      <a href="work/" data-name="3daysofdesign ’26" data-meta="Exhibition  —  Copenhagen 2026" data-d="cd es ev pr"><img src="assets/work/3daysofdesign-26-2.jpg" alt="3daysofdesign ’26"/></a>
+      <a href="work/" data-name="3daysofdesign ’26" data-meta="Exhibition  —  Copenhagen 2026" data-d="cd es ev pr"><img src="assets/work/3daysofdesign-26-3.jpg" alt="3daysofdesign ’26"/></a>
+      <a href="work/" data-name="Downtown Design" data-meta="Exhibition  —  Dubai 2025" data-d="cd es ev pr"><img src="assets/work/downtown-design-detail.jpg" alt="Downtown Design"/></a>
+      <a href="work/" data-name="Downtown Design" data-meta="Exhibition  —  Dubai 2025" data-d="cd es ev pr"><img src="assets/work/downtown-design-3.jpg" alt="Downtown Design"/></a>
+      <a href="work/" data-name="3daysofdesign ’26" data-meta="Exhibition  —  Copenhagen 2026" data-d="cd es ev pr"><img src="assets/work/3daysofdesign-26-mood.jpg" alt="3daysofdesign ’26"/></a>
+      <a href="work/" data-name="Downtown Design" data-meta="Exhibition  —  Dubai 2025" data-d="cd es ev pr"><img src="assets/work/downtown-design-2.jpg" alt="Downtown Design"/></a>
+      <a href="work/" data-name="3daysofdesign ’26" data-meta="Exhibition  —  Copenhagen 2026" data-d="cd es ev pr"><img src="assets/work/3daysofdesign-26.jpg" alt="3daysofdesign ’26"/></a>
+      <a href="work/" data-name="Downtown Design" data-meta="Exhibition  —  Dubai 2025" data-d="cd es ev pr"><img src="assets/work/downtown-design.jpg" alt="Downtown Design"/></a>
+      <a href="work/" data-name="Bespoke" data-meta="Website  —  Year TBC" data-d="cd ux wd"><img src="assets/work/bespoke.jpg" alt="Bespoke"/></a>
+      <a href="#projects" data-name="Beloved Projects" data-meta="Pinky Ring  —  Bellagio" data-d=""><img src="assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e5be5fd3526c1fcf35d7bd_Pinky Ring Bellagio Hotel Project Image 05-p-1600.webp" alt="Pinky Ring, Bellagio"/></a>
+    </template>
   </section>
 
   <!-- H05 Beloved Projects — scroll 40% — /work -->
@@ -228,6 +268,7 @@
 </main>
 
 <script src="js/home.js"></script>
+<script src="js/cloud.js"></script>
 <script src="js/cursor.js"></script>
 </body>
 </html>
