@@ -8,6 +8,9 @@
   var PASSWORD_HASH = '1c0d4e19d2673ccd7fd1b9aa017c5f482f56cbcc3f990d8660a3f364071a3c16';
   var KEY = 'mg-gate';
   var root = document.documentElement;
+  // Resolve asset paths from this script's location so the gate works on
+  // pages in subfolders (e.g. /work/) as well as the homepage.
+  var base = new URL('..', document.currentScript.src).href;
 
   function stored() {
     try { return localStorage.getItem(KEY); } catch (e) { return null; }
@@ -27,7 +30,7 @@
     var gate = document.createElement('form');
     gate.className = 'mg-gate';
     gate.innerHTML =
-      '<img class="mg-gate__logo" src="assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e309ec32ed162d0c0daae7_mglogonewred.svg" alt="Michelle Goodall">' +
+      '<img class="mg-gate__logo" src="' + base + 'assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e309ec32ed162d0c0daae7_mglogonewred.svg" alt="Michelle Goodall">' +
       '<input class="mg-gate__input" type="password" aria-label="Password" autocomplete="current-password" placeholder="Password" required autofocus>' +
       '<p class="mg-gate__err" role="alert" aria-live="polite"></p>';
     document.body.appendChild(gate);

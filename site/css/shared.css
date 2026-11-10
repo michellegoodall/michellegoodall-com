@@ -1,0 +1,15 @@
+/* Shared by every page: the under-construction password gate and the blob cursor. */
+
+/* Hide the system cursor; js/cursor.js draws the red blob instead. */
+html.has-blob-cursor, html.has-blob-cursor * {
+    cursor: none !important;
+  }
+
+/* Password gate (js/gate.js). Must load before the body renders so the page never flashes. */
+  html.is-gated body > *:not(.mg-gate):not(canvas) { display: none !important; }
+  .mg-gate { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 16px; background: #000; color: #ece7dc; font-family: soleil, sans-serif; z-index: 9998; }
+  .mg-gate__logo { width: 44px; height: auto; display: block; }
+  .mg-gate__input { width: 180px; max-width: 100%; padding: 8px 10px; font: inherit; font-size: 11px; letter-spacing: 0.2em; text-align: center; text-transform: uppercase; border: 1px solid #ece7dc80; border-radius: 0; background: transparent; color: #ece7dc; outline: none; }
+  .mg-gate__input:focus { border-color: #ece7dc; }
+  .mg-gate__input::placeholder { color: #ece7dc80; }
+  .mg-gate__err { margin: -16px 0 0; min-height: 1.2em; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #ece7dc80; }

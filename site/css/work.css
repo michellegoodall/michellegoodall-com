@@ -1,0 +1,288 @@
+/*
+ * Work index (Figma: "Work — Concept" › W01, W02, MW01).
+ *
+ * Figma uses stand-in fonts; per the Foundations page they map to the site's
+ * Adobe Fonts kit:
+ *   Playfair Display  → Ivyora Display 400 (titles)
+ *   Cormorant Light It → Ivyora Text 300 italic (discipline tags + filter)
+ *   Pinyon Script     → Altesse Std 24pt (nav, "work,")
+ *   Jost              → Soleil (meta + body)
+ */
+:root {
+  --black: #000;
+  --cream: #ece7dc;
+  --cream-50: #ece7dc80;
+  --red: #811600;
+  --ink: #222;
+
+  --serif: ivyora-display, "Times New Roman", serif;
+  --serif-italic: ivyora-text, "Times New Roman", serif;
+  --script: altesse-std-24pt, cursive;
+  --sans: soleil, sans-serif;
+
+  --gutter: 72px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { background: var(--black); }
+body {
+  margin: 0;
+  background: var(--black);
+  color: var(--cream);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, p, ol { margin: 0; padding: 0; }
+a { color: inherit; text-decoration: none; }
+
+/* Small uppercase label (Figma "Sans/Meta": 11/16, 12% tracking) */
+.meta {
+  font-family: var(--sans);
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cream-50);
+}
+
+/* ---- Nav (same as the homepage: fixed, logo left, script link right) ---- */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 90px;
+  padding: 0 50px;
+  /* Content scrolls under the fixed nav; fade it out so the two don't clash. */
+  background: linear-gradient(var(--black) 55%, transparent);
+}
+.nav__logo img { display: block; width: 70px; height: auto; }
+.nav__link {
+  font-family: var(--script);
+  font-size: 18px;
+  line-height: 18px;
+  color: var(--cream);
+}
+
+/* ---- Heading ---- */
+.work { padding: 170px var(--gutter) 118px; }
+
+.work__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 40px;
+  margin-bottom: 46px;
+}
+.work__title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(48px, 6.25vw, 90px);
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.work__title-script {
+  font-family: var(--script);
+  font-size: 1.333em;
+  line-height: 0;
+  text-transform: none;
+}
+.work__aside {
+  flex: 0 1 420px;
+  margin-top: 35px;
+  text-align: right;
+}
+.work__counter { margin-bottom: 15px; }
+.work__intro { font-size: 15px; line-height: 24px; }
+
+/* ---- Discipline filter ---- */
+.filter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  min-height: 66px;
+  border-top: 1px solid var(--cream);
+  border-bottom: 1px solid var(--cream);
+}
+.filter__list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px 22px;
+  padding: 8px 0;
+}
+.filter__btn {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--cream);
+  font-family: var(--serif-italic);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 24px;
+  line-height: 28px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.3s var(--ease);
+}
+.filter__btn:hover { color: color-mix(in srgb, var(--cream) 60%, var(--red)); }
+.filter__btn.is-active { color: var(--red); }
+.filter__btn:focus-visible { outline: 1px solid var(--cream-50); outline-offset: 4px; }
+.filter__count {
+  font-family: var(--sans);
+  font-style: normal;
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.12em;
+  vertical-align: top;
+}
+.filter__short { display: none; }
+
+/* ---- Project rows ---- */
+.rows { list-style: none; }
+
+.row {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr) 300px 140px;
+  grid-template-areas:
+    "index title tags when"
+    "index for   tags when";
+  grid-template-rows: auto 1fr;
+  min-height: 160px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--cream);
+  transition: opacity 0.5s var(--ease);
+}
+.row__index { grid-area: index; padding-top: 46px; transition: color 0.4s var(--ease); }
+.row__title {
+  grid-area: title;
+  padding: 30px 20px 0 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  /* Figma uses 72px Playfair; Ivyora is wider, so 68px keeps the longest
+     title ("London Showroom") on one line at the design's 1440px width. */
+  font-size: clamp(40px, 4.72vw, 68px);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--cream);
+  transition: color 0.4s var(--ease);
+}
+.row__for { grid-area: for; padding-top: 10px; padding-left: 2px; }
+.row__tags {
+  grid-area: tags;
+  padding-top: 40px;
+  font-family: var(--serif-italic);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 24px;
+  line-height: 28px;
+  color: var(--cream);
+  transition: color 0.4s var(--ease);
+}
+.row__tags span { transition: color 0.4s var(--ease); }
+.row__tags span + span::before { content: "·"; margin: 0 0.45em; color: var(--cream); }
+.row__when { grid-area: when; padding-top: 46px; text-align: right; }
+.row__meta-mobile, .row__thumb { display: none; }
+
+/* Hover (W01): the hovered row stays cream, the rest dim to ink. */
+.rows.is-hovering .row:not(.is-hover) .row__title,
+.rows.is-hovering .row:not(.is-hover) .row__tags,
+.rows.is-hovering .row:not(.is-hover) .row__tags span::before { color: var(--ink); }
+.row.is-hover .row__index { color: var(--red); }
+
+/* Filter (W02): rows that don't match fade to 18%; matching tags turn red. */
+.row.is-out { opacity: 0.18; }
+.row__tags span.is-match { color: var(--red); }
+.rows.is-hovering .row:not(.is-hover) .row__tags span.is-match { color: var(--red); }
+
+.work__lab { margin-top: 70px; text-align: center; }
+
+/* Tilted preview that trails the cursor blob (desktop only). */
+.preview {
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 50;
+  width: 380px;
+  height: 254px;
+  object-fit: cover;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s var(--ease);
+  will-change: transform;
+}
+.preview.is-visible { opacity: 1; }
+
+/* ---- Narrower desktops ---- */
+@media (max-width: 1180px) {
+  :root { --gutter: 48px; }
+  .row { grid-template-columns: 64px minmax(0, 1fr) 240px 110px; }
+  .row__tags { font-size: 20px; line-height: 24px; }
+  .filter__btn { font-size: 20px; line-height: 24px; }
+}
+
+/* ---- Mobile (MW01) ---- */
+@media (max-width: 767px) {
+  :root { --gutter: 24px; }
+
+  .nav { height: 64px; padding: 0 24px 0 20px; }
+  .nav__logo img { width: 44px; }
+
+  .work { padding-top: 120px; padding-bottom: 64px; }
+  .work__head { display: block; margin-bottom: 28px; }
+  .work__title { font-size: 32px; line-height: 34px; }
+  .work__title-script { font-size: 46px; }
+  .work__aside { margin-top: 26px; text-align: left; }
+  .work__counter { margin: 0; }
+  .work__intro { display: none; }
+
+  /* The filter scrolls sideways; no label, no counts. */
+  .filter { display: block; min-height: 0; margin: 0 calc(var(--gutter) * -1); padding: 0 var(--gutter); border: 0; position: relative; }
+  .filter::before, .filter::after { content: ""; position: absolute; left: var(--gutter); right: var(--gutter); height: 1px; background: var(--cream); }
+  .filter::before { top: 0; }
+  .filter::after { bottom: 0; }
+  .filter__label, .filter__count, .filter__long { display: none; }
+  .filter__short { display: inline; }
+  .filter__list {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 18px;
+    padding: 14px 0 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filter__list::-webkit-scrollbar { display: none; }
+  .filter__btn { font-size: 20px; line-height: 28px; }
+
+  .row {
+    grid-template-columns: minmax(0, 1fr) 72px;
+    grid-template-areas:
+      "meta  thumb"
+      "title thumb"
+      "tags  tags";
+    grid-template-rows: auto auto auto;
+    column-gap: 20px;
+    min-height: 0;
+    padding: 24px 0;
+  }
+  .row__index, .row__for, .row__when { display: none; }
+  .row__meta-mobile { display: block; grid-area: meta; white-space: pre; }
+  .row__title { padding: 6px 0 0; font-size: 32px; line-height: 34px; }
+  .row__tags { padding-top: 8px; font-size: 18px; line-height: 22px; max-width: 260px; }
+  .row__thumb { display: block; grid-area: thumb; width: 72px; height: 90px; object-fit: cover; }
+
+  .work__lab { margin-top: 48px; }
+}
+
+/* No hover on touch: the floating preview is never shown. */
+@media (hover: none) {
+  .preview { display: none; }
+}
