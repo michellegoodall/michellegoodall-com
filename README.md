@@ -27,6 +27,7 @@ Then open http://127.0.0.1:8765/. Use a server rather than opening the file dire
 | Contact | H10 | Red; rise in |
 
 How it works:
+- **Everything glides.** Scroll values are eased, not applied raw: each frame they close 12% of the gap to the real scroll position (v1's "smoothing 88"), so a mouse wheel's steps become one continuous motion. Keep new scroll effects on these eased values.
 - One rAF loop in `js/home.js` writes CSS variables on each section: `--q` (0 → 1 as it scrolls away), `--e` (0 → 1 as it scrolls in) and, for sticky `[data-scene]` sections, `--p` (0 → 1 across the scene). The CSS uses them for motion.
 - Manifesto words light up when `--p` passes each word's `data-at`.
 - `[data-reveal]` elements fade up once when they enter the screen.
@@ -35,7 +36,7 @@ How it works:
 - Layout sizes are the Figma px at 1440 × 900, written as `calc(N * var(--u))`, so each section keeps its proportions at any window size. Phones (≤767px) get a stacked layout; there are no v2 mobile frames yet.
 
 ### The glance: the cloud
-`js/cloud.js`, with the pieces listed in the `<template class="cloud__pieces">` inside `#glance`. Every card is a point in 3D, projected by hand each frame (no library), so the Figma states (G1–G4) blend into each other across the pinned scroll. Cards are a fixed 150 × 200 box and move with `transform` and `opacity` only (no blur filters, no resizing), which keeps scrolling smooth.
+`js/cloud.js`, with the pieces listed in the `<template class="cloud__pieces">` inside `#glance`. Every card is a point in 3D, projected by hand each frame (no library), so the Figma states (G1–G4) blend into each other across the pinned scroll. Cards are a fixed 150 × 200 box and move with `transform` and `opacity` only (no blur filters, no resizing), which keeps scrolling smooth. They stay solid (80–100% opacity; the deck is fully opaque), stacking order only changes when two cards actually pass each other, and the cloud reads the eased `--p` from `home.js`.
 
 | Scroll | State | What happens |
 |---|---|---|

@@ -5,6 +5,7 @@
  *   --q  0 → 1 as a section scrolls up and out of view (hero exit)
  *   --e  0 → 1 as a section scrolls into view from below (photo motion)
  *   --p  0 → 1 across a sticky [data-scene] (manifesto, the glance cloud)
+ * All three are eased toward the real scroll position, so motion glides.
  * CSS turns those into motion (see css/home.css). This file also:
  *   - lights up manifesto words as --p passes each word's data-at
  *   - reveals [data-reveal] elements on enter
@@ -42,43 +43,64 @@
   }
 
   // ---- Main loop -------------------------------------------------------------
-  var ticking = false;
+  // Scroll values are eased rather than applied raw: each frame they close 12%
+  // of the gap to the real scroll position (the same "smoothing 88" the v1
+  // homepage used). A mouse wheel moves the page in steps; easing turns those
+  // steps into one continuous glide, so nothing jumps.
+  var SMOOTH = 0.12;
+  var state = sections.map(function () { return { q: null, e: null, p: null }; });
+  var running = false, lastTime = 0;
 
-  function update() {
-    ticking = false;
+  function frame(now) {
+    var dt = lastTime ? Math.min((now - lastTime) / 16.667, 3) : 1;
+    lastTime = now;
+    var k = reduceMotion ? 1 : 1 - Math.pow(1 - SMOOTH, dt);
     var vh = window.innerHeight;
-    var railSection = null;
+    var railSection = null, settled = true;
 
-    sections.forEach(function (sec) {
+    sections.forEach(function (sec, i) {
       var r = sec.getBoundingClientRect();
       if (!r.height) return;                       // hidden (e.g. behind the password gate)
+      var st = state[i];
 
-      sec.style.setProperty('--q', clamp(-r.top / r.height, 0, 1).toFixed(4));
-      sec.style.setProperty('--e', clamp(1 - r.top / vh, 0, 1).toFixed(4));
-
+      var target = {
+        q: clamp(-r.top / r.height, 0, 1),
+        e: clamp(1 - r.top / vh, 0, 1),
+        p: 0
+      };
       if (sec.hasAttribute('data-scene')) {
         var span = r.height - vh;
-        var p = span > 0 ? clamp(-r.top / span, 0, 1) : 0;
-        sec.style.setProperty('--p', p.toFixed(4));
-
-        if (sec === manifesto) {
-          words.forEach(function (w) { w.classList.toggle('is-on', p >= parseFloat(w.dataset.at)); });
-        }
+        target.p = span > 0 ? clamp(-r.top / span, 0, 1) : 0;
       }
 
-      // The rail follows whichever section covers the middle of the screen.
+      ['q', 'e', 'p'].forEach(function (key) {
+        var v = st[key] === null ? target[key] : st[key] + (target[key] - st[key]) * k;
+        if (Math.abs(target[key] - v) < 0.0005) v = target[key];
+        else settled = false;
+        if (v !== st[key]) { st[key] = v; sec.style.setProperty('--' + key, v.toFixed(4)); }
+      });
+
+      if (sec === manifesto) {
+        words.forEach(function (w) { w.classList.toggle('is-on', st.p >= parseFloat(w.dataset.at)); });
+      }
+
+      // The rail follows whichever section covers the middle of the screen
+      // (from the real position, so it answers immediately).
       if (r.top <= vh * 0.5 && r.bottom > vh * 0.5) railSection = sec;
     });
 
     setRail(railSection);
+
+    if (settled) { running = false; lastTime = 0; }
+    else requestAnimationFrame(frame);
   }
 
-  function requestUpdate() {
-    if (!ticking) { ticking = true; requestAnimationFrame(update); }
+  function update() {
+    if (!running) { running = true; requestAnimationFrame(frame); }
   }
 
-  window.addEventListener('scroll', requestUpdate, { passive: true });
-  window.addEventListener('resize', requestUpdate);
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
   // The password gate hides the page until it's unlocked; measure again then.
   window.addEventListener('mg:unlocked', update);
 

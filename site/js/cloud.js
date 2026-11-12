@@ -47,7 +47,7 @@
   var CARD_W = 150, CARD_H = 200; // every card's box; size comes from scale
   var FOCAL = 1000;               // perspective focal length
   var REST_DIST = 1100;           // camera distance at rest (G1)
-  var FLY_DIST = 260;             // camera distance at the end of the fly-in (G2)
+  var FLY_DIST = 480;             // camera distance at the end of the fly-in (G2): inside the cloud, not through it
   var COPIES = 3;                 // each piece appears this many times in the cloud
 
   // Scroll phases (fractions of the pinned scene). The last stretch holds on
@@ -221,7 +221,7 @@
     return { x: CX + x1 * s, y: CY + y2 * s, s: s * c.size, depth: depth };
   }
 
-  var focused = null, shownPiece = null, lastTime = 0, running = false, visible = false;
+  var focused = null, shownPiece = null, lastTime = 0, running = false, visible = false, order = [];
 
   function frame(now) {
     var dt = lastTime ? Math.min((now - lastTime) / 1000, 0.05) : 0.016;
@@ -229,8 +229,11 @@
 
     var r = section.getBoundingClientRect();
     if (!r.height) { if (visible) requestAnimationFrame(frame); else running = false; return; }
+    // Scroll progress: the eased value js/home.js writes as --p (so the fly-in,
+    // gather and photo opening glide rather than step with the mouse wheel).
+    var eased = parseFloat(section.style.getPropertyValue('--p'));
     var span = r.height - vh;
-    var p = span > 0 ? clamp(-r.top / span, 0, 1) : 0;
+    var p = isNaN(eased) ? (span > 0 ? clamp(-r.top / span, 0, 1) : 0) : eased;
 
     var fly = smooth((p - REST_END) / (FLY_END - REST_END));
     var gather = smooth((p - FLY_END) / (GATHER_END - FLY_END));
@@ -246,9 +249,12 @@
       pitch = clamp(pitch + pitchVel, -0.7, 0.7);
       pitch += (0.12 - pitch) * 0.02;
     }
-    if (!reduceMotion && !sortKey) yaw += dt * 0.08 * (1 - 0.6 * fly) * (1 - gather);
+    if (!reduceMotion && !sortKey) yaw += dt * 0.06 * (1 - 0.6 * fly) * (1 - gather);
 
-    var camDist = lerp(REST_DIST, FLY_DIST, fly);
+    // The camera flies in, then pulls back out as the cloud gathers, so cards
+    // travel into the deck from a normal-looking cloud (not from huge, faded
+    // cards right at the camera).
+    var camDist = lerp(REST_DIST, FLY_DIST, fly * (1 - smooth(gather * 1.6)));
     var cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
     var proj = cards.map(function (c) { return project(c, camDist, cy, sy, cp, sp); });
 
@@ -275,20 +281,19 @@
     }
     var spread = Math.min(48, 6.9 * Math.max(fanCount - 1, 0));
 
-    var ease = 1 - Math.pow(1 - 0.16, dt * 60);
+    var ease = 1 - Math.pow(1 - 0.2, dt * 60);
 
     cards.forEach(function (c, i) {
       var q = proj[i];
       var t = { x: q.x, y: q.y, s: q.s, r: 0, o: 1, z: Math.round(3000 - q.depth) };
 
-      // G1: far cards a little faded (72–100%, from the frame).
-      t.o = clamp(1 - (q.depth - 155) * 0.32 / 875, 0.7, 1);
+      // G1: far cards a touch faded (80–100%), so overlaps stay crisp.
+      t.o = clamp(1 - (q.depth - 155) * 0.2 / 875, 0.8, 1);
       if (fly > 0) {
-        // G2: anything reaching the camera fades away; the focus card stays bright
-        // while the rest dim a little so it reads clearly.
-        t.o *= clamp((q.depth - 80) / 160, 0, 1);
+        // G2: anything reaching the camera fades away; the focus card simply
+        // comes to the front, a touch larger (the rest stay solid).
+        t.o *= clamp((q.depth - 110) / 70, 0, 1);   // short fade, so few cards are ever see-through
         if (c === focused) { t.o = 1; t.z = 4000; t.s *= 1.06; }
-        else t.o *= lerp(1, 0.55, clamp(fly * 3, 0, 1) * (focused ? 1 : 0.4));
       }
 
       // G3: matching pieces fan out, the rest fall back into dust.
@@ -308,13 +313,17 @@
       if (gather > 0) {
         var slot = c.piece.index, deck;
         if (c.copy === 0) {
+          // Solid cards (see-through ones layered into a ghostly mess).
           deck = { x: DECK[slot][0], y: DECK[slot][1], s: (300 + 14 * slot) / CARD_W,
-                   r: (11 - 1.1 * slot) * (slot % 2 ? -1 : 1), o: 0.4 + 0.06 * slot, z: 6000 + slot };
+                   r: (11 - 1.1 * slot) * (slot % 2 ? -1 : 1), o: 1, z: 6000 + slot };
         } else {
           deck = { x: CX - 9, y: CY, s: 2, r: 0, o: 0, z: 5000 };
         }
+        // Duplicates fade out in the first part of the gather, so only the
+        // ten deck cards are seen travelling in.
+        var go = c.copy === 0 ? gather : clamp(gather * 2.5, 0, 1);
         t = { x: lerp(t.x, deck.x, gather), y: lerp(t.y, deck.y, gather), s: lerp(t.s, deck.s, gather),
-              r: lerp(t.r, deck.r, gather), o: lerp(t.o, deck.o, gather), z: gather > 0.5 ? deck.z : t.z };
+              r: lerp(t.r, deck.r, gather), o: lerp(t.o, deck.o, go), z: gather > 0.5 ? deck.z : t.z };
         // The deck fades out under the opening photo.
         if (open > 0) t.o *= 1 - clamp(open * 2.5, 0, 1);
       }
@@ -324,8 +333,17 @@
         c.cur = { x: lerp(c.cur.x, t.x, ease), y: lerp(c.cur.y, t.y, ease), s: lerp(c.cur.s, t.s, ease),
                   r: lerp(c.cur.r, t.r, ease), o: lerp(c.cur.o, t.o, ease), z: t.z };
       }
+      c.zt = t.z;
       draw(c);
     });
+
+    // Stacking: nearest on top, re-assigned only when the order actually
+    // changes, so cards don't flicker as they pass each other.
+    var sorted = cards.slice().sort(function (a, b) { return a.zt - b.zt; });
+    if (sorted.some(function (c, i) { return order[i] !== c; })) {
+      order = sorted;
+      sorted.forEach(function (c, i) { c.el.style.zIndex = i + 1; });
+    }
 
     // The Beloved Projects photo opens out of the deck's top card.
     if (open > 0) {
@@ -370,12 +388,11 @@
 
   function draw(c) {
     var s = c.cur, d = c.drawn, el = c.el;
-    el.style.transform = 'translate3d(' + (s.x - CARD_W / 2).toFixed(1) + 'px,' + (s.y - CARD_H / 2).toFixed(1) +
+    el.style.transform = 'translate3d(' + (s.x - CARD_W / 2).toFixed(2) + 'px,' + (s.y - CARD_H / 2).toFixed(2) +
       'px,0) rotate(' + s.r.toFixed(2) + 'deg) scale(' + s.s.toFixed(4) + ')';
     var o = Math.round(s.o * 100) / 100;
     // ('' rather than 'visible', so a hidden parent still hides the cards)
     if (o !== d.o) { el.style.opacity = o; d.o = o; el.style.visibility = o < 0.01 ? 'hidden' : ''; }
-    if (s.z !== d.z) { el.style.zIndex = s.z; d.z = s.z; }
   }
 
   function start() {
