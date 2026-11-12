@@ -255,17 +255,38 @@ body.on-red .rail__link.is-active { color: var(--cream); }
 }
 .services .open-link { color: var(--black); }
 
-/* ---- H04 The glance: a calm grid (js/glance.js) ---- */
-.glance { padding: calc(130 * var(--u)) var(--gutter) calc(90 * var(--u)); }
-.glance__head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 24px 40px;
-  flex-wrap: wrap;
+/* ---- H04 The glance: the cloud (js/glance.js) ---- */
+/* Positions are Figma px in the 1440 × 900 frame, placed around its centre
+   and scaled by --k (written by js/glance.js). Cards only ever move with
+   transform and opacity: no blur, no resizing. */
+.glance { --k: 1; height: 100vh; min-height: 640px; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
+.glance__stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1440px;
+  height: 900px;
+  transform: translate(-50%, -50%) scale(var(--k));
 }
-.glance__filters { display: flex; flex-wrap: wrap; gap: 4px 22px; justify-content: flex-end; }
+.glance__card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 150px;
+  height: 200px;
+  overflow: hidden;
+  background: var(--ink);
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+}
+.glance__card img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.glance__card:focus-visible { outline: 1px solid var(--cream); outline-offset: 3px; }
+
+.glance__label { position: absolute; left: var(--gutter); top: calc(50% + (110px - 450px) * var(--k)); z-index: 3; }
+
+.glance__filters { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
 .glance__filter {
+  position: absolute;
   padding: 0;
   border: 0;
   background: none;
@@ -273,43 +294,38 @@ body.on-red .rail__link.is-active { color: var(--cream); }
   font-family: var(--serif-italic);
   font-style: italic;
   font-weight: 300;
-  font-size: max(17px, calc(24 * var(--u)));
+  font-size: max(15px, calc(24px * var(--k)));
   line-height: 1.17;
   white-space: nowrap;
+  pointer-events: auto;
   cursor: pointer;
   transition: color 0.3s var(--ease);
 }
 .glance__filter:hover, .glance__filter.is-active { color: var(--red); }
 .glance__filter:focus-visible { outline: 1px solid var(--cream-50); outline-offset: 4px; }
-.glance__count {
-  margin-left: 4px;
-  font-family: var(--sans);
-  font-style: normal;
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  vertical-align: top;
-}
-.glance__grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: calc(16 * var(--u));
-  margin-top: calc(40 * var(--u));
-}
-.glance__card { display: block; aspect-ratio: 1; overflow: hidden; background: var(--ink); transition: opacity 0.4s var(--ease); }
-.glance__card img { width: 100%; height: 100%; object-fit: cover; }
-.glance__card:focus-visible { outline: 1px solid var(--cream); outline-offset: 3px; }
-/* Hovering a piece lets it stand alone; a discipline fades the others right back. */
-.glance__grid.is-hovering .glance__card:not(.is-hover) { opacity: 0.4; }
-.glance__card.is-out, .glance__grid.is-hovering .glance__card.is-out { opacity: 0.12; }
-.glance__caption { min-height: calc(150 * var(--u)); margin-top: calc(24 * var(--u)); }
+.glance__count { margin-left: 0.45em; }
+.glance__filter[data-pos^="l"] { left: calc(50% + (72px - 720px) * var(--k)); }
+.glance__filter[data-pos^="r"] { right: calc(50% - (1368px - 720px) * var(--k)); }
+.glance__filter[data-pos$="1"] { top: calc(50% + (170px - 450px) * var(--k)); }
+.glance__filter[data-pos$="2"] { top: calc(50% + (450px - 450px) * var(--k)); }
+.glance__filter[data-pos$="3"] { top: calc(50% + (690px - 450px) * var(--k)); }
+
+.glance__sorted, .glance__caption { position: absolute; z-index: 3; pointer-events: none; opacity: 0; transition: opacity 0.4s var(--ease); }
+.glance__sorted.is-on, .glance__caption.is-on { opacity: 1; }
+.glance__sorted { left: 0; right: 0; top: calc(50% + (170px - 450px) * var(--k)); text-align: center; }
+.glance__sorted-title { font-family: var(--script); font-size: calc(100px * var(--k)); line-height: 1.25; }
+.glance__sorted-count { margin-top: calc(5px * var(--k)); white-space: pre; }
+.glance__caption { left: 0; right: 0; bottom: calc(24 * var(--u)); text-align: center; }
 .glance__meta { white-space: pre; }
 .glance__name {
-  margin-left: calc(-6 * var(--u));
   font-family: var(--script);
-  font-size: max(48px, calc(100 * var(--u)));
+  font-size: max(44px, calc(90px * var(--k)));
   line-height: 1.25;
   white-space: nowrap;
 }
+.glance__hint { position: absolute; left: 0; right: 0; bottom: 44px; z-index: 3; text-align: center; white-space: pre; pointer-events: none; transition: opacity 0.4s var(--ease); }
+.glance.is-sorted .glance__hint, .glance.is-naming .glance__hint { opacity: 0; }
+.glance .open-link { z-index: 3; }
 
 /* ---- H05 Beloved Projects ---- */
 .beloved { padding: calc(150 * var(--u)) var(--gutter) 0; }
@@ -470,10 +486,16 @@ body.on-red .rail__link.is-active { color: var(--cream); }
   .services__item { height: auto; padding: 16px 0 24px; grid-template-columns: 40px 1fr; }
   .services__name { font-size: 34px; line-height: 38px; }
 
-  .glance { padding-top: 120px; }
-  .glance__filters { justify-content: flex-start; gap: 4px 16px; }
-  .glance__grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 32px; }
-  .glance__caption { min-height: 110px; }
+  .sec.glance { height: 100svh; min-height: 560px; padding: 0; }
+  .glance__label { top: 84px; }
+  .glance__filters { inset: 108px 16px auto; display: flex; flex-wrap: wrap; gap: 2px 14px; }
+  .glance__filter { position: static; font-size: 16px; }
+  .glance__sorted { top: auto; bottom: 120px; }
+  .glance__sorted-title { font-size: 44px; }
+  .glance__sorted-count { white-space: normal; padding: 0 24px; }
+  .glance__caption { bottom: 96px; }
+  .glance__hint { white-space: normal; padding: 0 24px; bottom: 28px; }
+  .glance .open-link { display: none; }
   .beloved { padding-top: 140px; }
   .beloved__title { font-size: 104px; line-height: 92px; }
 

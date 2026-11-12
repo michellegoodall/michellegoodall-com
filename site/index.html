@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<link href="css/shared.css?v=4" rel="stylesheet" type="text/css"/>
-<script src="js/gate.js?v=4"></script>
+<link href="css/shared.css?v=5" rel="stylesheet" type="text/css"/>
+<script src="js/gate.js?v=5"></script>
 <title>Michelle Goodall</title>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta name="description" content="Michelle Goodall: creative director, designer and developer. Exhibitions, showrooms, events, identity, print and websites."/>
 <link href="assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67ed9099bbb11cd3185e475f_mglogofavicon.png" rel="shortcut icon" type="image/x-icon"/>
 <link href="assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67ed90d1be063791513706a1_mglogowebclip.png" rel="apple-touch-icon"/>
 <link rel="stylesheet" href="https://use.typekit.net/vpq1jxz.css">
-<link href="css/home.css?v=4" rel="stylesheet" type="text/css"/>
+<link href="css/home.css?v=5" rel="stylesheet" type="text/css"/>
 </head>
 <!--
   Homepage v2 (Figma: "Homepage v2 — Scroll", frames H01–H10).
@@ -79,40 +79,53 @@
   </section>
 
   <!--
-    H04 The glance — a calm grid of every piece. Pick a discipline and the
-    other pieces fade back; hover a piece to see its name. js/glance.js.
-    data-d: cd Creative Direction, es Exhibitions & Spaces, ev Events,
-    pr Print & Collateral, ux UI / UX, wd Web Development.
+    H04 The glance — the cloud (Figma: "Glance — Explorations" G1 + G3), kept calm.
+    A full-screen section (nothing pinned): all the work floats as one slowly
+    turning cloud you can drag to spin. Hover a discipline (tap on phones) and
+    its pieces fan out while the rest fade back; hover a piece to see its name.
+    js/glance.js builds the cards from the <template> list below.
   -->
   <section class="sec glance" id="glance" data-rail="glance">
-    <div class="glance__head" data-reveal>
-      <p class="meta">03 — A glance at everything</p>
-      <div class="glance__filters" role="group" aria-label="Show work by discipline">
-        <button class="glance__filter" type="button" data-d="cd" aria-pressed="false">Creative Direction<span class="glance__count"></span></button>
-        <button class="glance__filter" type="button" data-d="es" aria-pressed="false">Exhibitions &amp; Spaces<span class="glance__count"></span></button>
-        <button class="glance__filter" type="button" data-d="ev" aria-pressed="false">Events<span class="glance__count"></span></button>
-        <button class="glance__filter" type="button" data-d="pr" aria-pressed="false">Print &amp; Collateral<span class="glance__count"></span></button>
-        <button class="glance__filter" type="button" data-d="ux" aria-pressed="false">UI / UX<span class="glance__count"></span></button>
-        <button class="glance__filter" type="button" data-d="wd" aria-pressed="false">Web Development<span class="glance__count"></span></button>
-      </div>
+    <div class="glance__stage"></div>
+
+    <p class="meta glance__label">03 — A glance at everything</p>
+
+    <div class="glance__filters" role="group" aria-label="Sort the work by discipline">
+      <button class="glance__filter" type="button" data-d="cd" data-pos="l1">Creative Direction<span class="glance__count"></span></button>
+      <button class="glance__filter" type="button" data-d="es" data-pos="r1">Exhibitions &amp; Spaces<span class="glance__count"></span></button>
+      <button class="glance__filter" type="button" data-d="ev" data-pos="l2">Events<span class="glance__count"></span></button>
+      <button class="glance__filter" type="button" data-d="pr" data-pos="r2">Print &amp; Collateral<span class="glance__count"></span></button>
+      <button class="glance__filter" type="button" data-d="ux" data-pos="l3">UI / UX<span class="glance__count"></span></button>
+      <button class="glance__filter" type="button" data-d="wd" data-pos="r3">Web Development<span class="glance__count"></span></button>
     </div>
-    <ul class="glance__grid" data-reveal>
-      <li><a class="glance__card" href="work/" data-name="3daysofdesign ’26" data-meta="Exhibition  —  Copenhagen 2026" data-d="cd es ev pr"><img src="assets/work/3daysofdesign-26-2.jpg" alt="3daysofdesign ’26" loading="lazy"/></a></li>
-      <li><a class="glance__card" href="work/" data-name="3daysofdesign ’26" data-meta="Exhibition  —  Copenhagen 2026" data-d="cd es ev pr"><img src="assets/work/3daysofdesign-26-3.jpg" alt="3daysofdesign ’26" loading="lazy"/></a></li>
-      <li><a class="glance__card" href="work/" data-name="Downtown Design" data-meta="Exhibition  —  Dubai 2025" data-d="cd es ev pr"><img src="assets/work/downtown-design-detail.jpg" alt="Downtown Design" loading="lazy"/></a></li>
-      <li><a class="glance__card" href="work/" data-name="Downtown Design" data-meta="Exhibition  —  Dubai 2025" data-d="cd es ev pr"><img src="assets/work/downtown-design-3.jpg" alt="Downtown Design" loading="lazy"/></a></li>
-      <li><a class="glance__card" href="work/" data-name="3daysofdesign ’26" data-meta="Exhibition  —  Copenhagen 2026" data-d="cd es ev pr"><img src="assets/work/3daysofdesign-26-mood.jpg" alt="3daysofdesign ’26" loading="lazy"/></a></li>
-      <li><a class="glance__card" href="work/" data-name="Downtown Design" data-meta="Exhibition  —  Dubai 2025" data-d="cd es ev pr"><img src="assets/work/downtown-design-2.jpg" alt="Downtown Design" loading="lazy"/></a></li>
-      <li><a class="glance__card" href="work/" data-name="3daysofdesign ’26" data-meta="Exhibition  —  Copenhagen 2026" data-d="cd es ev pr"><img src="assets/work/3daysofdesign-26.jpg" alt="3daysofdesign ’26" loading="lazy"/></a></li>
-      <li><a class="glance__card" href="work/" data-name="Downtown Design" data-meta="Exhibition  —  Dubai 2025" data-d="cd es ev pr"><img src="assets/work/downtown-design.jpg" alt="Downtown Design" loading="lazy"/></a></li>
-      <li><a class="glance__card" href="work/" data-name="Bespoke" data-meta="Website  —  Year TBC" data-d="cd ux wd"><img src="assets/work/bespoke.jpg" alt="Bespoke" loading="lazy"/></a></li>
-      <li><a class="glance__card" href="#projects" data-name="Beloved Projects" data-meta="Pinky Ring  —  Bellagio" data-d=""><img src="assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e5be5fd3526c1fcf35d7bd_Pinky Ring Bellagio Hotel Project Image 05-p-1600.webp" alt="Pinky Ring, Bellagio" loading="lazy"/></a></li>
-    </ul>
+
+    <div class="glance__sorted" aria-live="polite">
+      <p class="glance__sorted-title"></p>
+      <p class="meta glance__sorted-count"></p>
+    </div>
+
     <div class="glance__caption" aria-live="polite">
-      <p class="meta glance__meta">Hover a piece  ·  pick a discipline</p>
-      <p class="glance__name">&nbsp;</p>
+      <p class="meta meta--cream glance__meta"></p>
+      <p class="glance__name"></p>
     </div>
+
+    <p class="meta glance__hint">[&nbsp;&nbsp;drag to spin&nbsp;&nbsp;·&nbsp;&nbsp;pick a discipline to sort&nbsp;&nbsp;]</p>
     <a class="open-link" href="work/">[&nbsp;&nbsp;Open page&nbsp;&nbsp;/work&nbsp;&nbsp;→&nbsp;&nbsp;]</a>
+
+    <!-- data-d: cd Creative Direction, es Exhibitions & Spaces, ev Events,
+         pr Print & Collateral, ux UI / UX, wd Web Development -->
+    <template class="glance__pieces">
+      <a href="work/" data-name="3daysofdesign ’26" data-meta="Exhibition  —  Copenhagen 2026" data-d="cd es ev pr"><img src="assets/work/3daysofdesign-26-2.jpg" alt="3daysofdesign ’26"/></a>
+      <a href="work/" data-name="3daysofdesign ’26" data-meta="Exhibition  —  Copenhagen 2026" data-d="cd es ev pr"><img src="assets/work/3daysofdesign-26-3.jpg" alt="3daysofdesign ’26"/></a>
+      <a href="work/" data-name="Downtown Design" data-meta="Exhibition  —  Dubai 2025" data-d="cd es ev pr"><img src="assets/work/downtown-design-detail.jpg" alt="Downtown Design"/></a>
+      <a href="work/" data-name="Downtown Design" data-meta="Exhibition  —  Dubai 2025" data-d="cd es ev pr"><img src="assets/work/downtown-design-3.jpg" alt="Downtown Design"/></a>
+      <a href="work/" data-name="3daysofdesign ’26" data-meta="Exhibition  —  Copenhagen 2026" data-d="cd es ev pr"><img src="assets/work/3daysofdesign-26-mood.jpg" alt="3daysofdesign ’26"/></a>
+      <a href="work/" data-name="Downtown Design" data-meta="Exhibition  —  Dubai 2025" data-d="cd es ev pr"><img src="assets/work/downtown-design-2.jpg" alt="Downtown Design"/></a>
+      <a href="work/" data-name="3daysofdesign ’26" data-meta="Exhibition  —  Copenhagen 2026" data-d="cd es ev pr"><img src="assets/work/3daysofdesign-26.jpg" alt="3daysofdesign ’26"/></a>
+      <a href="work/" data-name="Downtown Design" data-meta="Exhibition  —  Dubai 2025" data-d="cd es ev pr"><img src="assets/work/downtown-design.jpg" alt="Downtown Design"/></a>
+      <a href="work/" data-name="Bespoke" data-meta="Website  —  Year TBC" data-d="cd ux wd"><img src="assets/work/bespoke.jpg" alt="Bespoke"/></a>
+      <a href="#projects" data-name="Beloved Projects" data-meta="Pinky Ring  —  Bellagio" data-d=""><img src="assets/cdn.prod.website-files.com/67e188bcae1b9517b8659be5/67e5be5fd3526c1fcf35d7bd_Pinky Ring Bellagio Hotel Project Image 05-p-1600.webp" alt="Pinky Ring, Bellagio"/></a>
+    </template>
   </section>
 
   <!-- H05 Beloved Projects — /work -->
@@ -218,8 +231,8 @@
 
 </main>
 
-<script src="js/home.js?v=4"></script>
-<script src="js/glance.js?v=4"></script>
-<script src="js/cursor.js?v=4"></script>
+<script src="js/home.js?v=5"></script>
+<script src="js/glance.js?v=5"></script>
+<script src="js/cursor.js?v=5"></script>
 </body>
 </html>

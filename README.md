@@ -15,14 +15,14 @@ Then open http://127.0.0.1:8765/. Use a server rather than opening the file dire
 ## Homepage
 `site/index.html` is Homepage v2 (Figma: "Homepage v2 — Scroll"), styled by `css/home.css`. It's an ordinary scroll of full-screen sections.
 
-**Motion is deliberately minimal.** There's one motion language: elements fade up 16px once as they appear (`[data-reveal]`, added by `js/home.js`), plus hover states. Nothing pins the page, follows the scroll position or uses blur. Keep it that way: if a new effect needs a scroll-linked loop or a filter, it's probably too much.
+**Motion is deliberately minimal.** Elements fade up 16px once as they appear (`[data-reveal]`, added by `js/home.js`), plus hover states. The one ambient effect is the glance cloud, and it's kept clean: cards are a fixed size and only change `transform` and `opacity`, it turns slowly, and its loop runs only while it's on screen and moving. Nothing pins the page, follows the scroll position or uses blur. Keep it that way.
 
 | Section | Figma | Motion |
 |---|---|---|
 | Hero | H01 | None. "GOODALL," / *Michelle* with the blurb, as on v1 |
 | Manifesto | H02 | Fades in; the three script words then warm from ink to cream, one after another |
 | I do the lot | H03 | Red; the disciplines fade up with a slight stagger |
-| The glance | H04 | A 5 × 2 grid of every piece (`js/glance.js`). Hover a discipline (tap on phones) and the other pieces fade back; hover a piece and the rest dim and its name appears in script below |
+| The glance | H04 / "Glance — Explorations" G1 + G3 | The cloud, kept calm (`js/glance.js`): every piece floats as one slowly turning 3D cloud; drag to spin. Hover a discipline (tap on phones) and its pieces fan out while the rest fade to dust; hover a piece and the cloud pauses, the piece comes to the front and its name appears. A normal full-screen section: no pinning, no blur, no scroll-linked camera |
 | Beloved Projects | H05 | Full-bleed Pinky Ring photo; the heading fades up |
 | Bespoke, Downtown Design, 3daysofdesign ’26 | H06–H08 | Card and details fade up |
 | The index & the lab | H09 | Fade up |
@@ -30,7 +30,7 @@ Then open http://127.0.0.1:8765/. Use a server rather than opening the file dire
 
 - The right-edge rail follows the section in the middle of the screen (`data-rail`). Sections with `data-theme="red"` switch it to black.
 - Each section has its "Open page" link in the markup. Only `/work/` exists so far, so the others are `hidden`; remove `hidden` when a route is built.
-- Glance pieces are the `<a class="glance__card">` items, with `data-name`, `data-meta` and `data-d` (discipline keys: `cd es ev pr ux wd`). Discipline counts are worked out from them.
+- Glance pieces are listed in `<template class="glance__pieces">`, each an `<a>` with `data-name`, `data-meta` and `data-d` (discipline keys: `cd es ev pr ux wd`). Each piece appears three times in the cloud; discipline counts are worked out from the list.
 - Layout sizes are the Figma px at 1440 × 900, written as `calc(N * var(--u))`, so each section keeps its proportions. Phones (≤767px) get a stacked layout.
 - Local CSS and JS links in `index.html` carry a `?v=` number. Bump it when you change those files, so browsers don't mix a cached old file with new markup.
 
